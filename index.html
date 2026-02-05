@@ -3,150 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DABESTGAME - GOOSE_EDITION</title>
+    <title>DABESTGAME - ARTIFACTS</title>
     <style>
         :root { 
-            --bg: #050505; --text: #0f0; --gold: #ffd700;
+            --bg: #030303; --text: #0f0; --gold: #ffd700;
             --zenith: #00ff88; --ducky: #fff700; --goose: #ff00ff;
+            --rare: #3498db;
         }
         
         body { background: var(--bg); color: var(--text); font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .panel { width: 320px; background: #000; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
-        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        /* Sidebar Panels */
+        .panel { width: 320px; background: #000; border: 1px solid #1a1a1a; padding: 15px; display: flex; flex-direction: column; z-index: 100; box-shadow: 0 0 15px rgba(0,0,0,1); }
+        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
 
-        /* Evolution Effects */
-        .lucky-glow { filter: drop-shadow(0 0 20px var(--ducky)); animation: float 1.5s infinite ease-in-out; }
-        .goose-glow { filter: drop-shadow(0 0 30px var(--goose)); animation: pulse 0.5s infinite alternate; border: 2px solid var(--goose) !important; }
+        /* Particle Canvas */
+        #particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+
+        /* Animal Aura & Stage */
+        .stage-box { 
+            width: 300px; height: 300px; border: 1px solid #222; display: flex; 
+            align-items: center; justify-content: center; font-size: 8rem; 
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2;
+            position: relative; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%);
+        }
+        .aura { position: absolute; inset: -20px; border-radius: 50%; opacity: 0.3; filter: blur(40px); z-index: -1; animation: rotateAura 4s linear infinite; }
+        @keyframes rotateAura { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* UI Elements */
+        .shop-item { background: #0a0a0a; border: 1px solid #333; padding: 10px; margin-bottom: 8px; border-radius: 5px; }
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; font-weight: 900; background: #fff; color: #000; margin-top: 5px; text-transform: uppercase; }
+        .btn:hover { filter: brightness(0.8); }
+        .evolve-btn { background: var(--goose); color: white; animation: pulse 1s infinite; }
         
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes pulse { from { box-shadow: 0 0 10px var(--goose); } to { box-shadow: 0 0 40px var(--goose); } }
-
-        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; font-weight: 900; background: #fff; color: #000; margin-top: 10px; }
-        .evolve-btn { background: var(--goose); color: white; display: none; }
-
-        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; }
-        .stat-card { background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; font-size: 0.8rem; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        .stat-card { background: #080808; border-left: 3px solid var(--text); padding: 8px; margin-bottom: 10px; font-size: 0.75rem; }
+        .inventory-list { overflow-y: auto; flex-grow: 1; font-size: 0.7rem; margin-top: 10px; border-top: 1px solid #222; }
     </style>
 </head>
 <body>
 
+<canvas id="particle-canvas"></canvas>
+
 <div class="panel">
-    <h2 style="color:var(--gold); margin:0;">WHALE STATUS</h2>
+    <h2 style="color:var(--gold); margin:0;">WHALE_CORE</h2>
     <div class="stat-card">
         <div>RANK: <span id="lvl">1</span></div>
         <div>LUCK: <span id="luck-total">1.0</span>x</div>
-        <div style="color:var(--goose)">GOOSE BUFF: <span id="goose-buff">0</span>x</div>
+        <div>ARTIFACTS: <span id="art-count">0</span></div>
     </div>
     
-    <div class="stat-card" style="border-color: var(--ducky)">
-        <div style="color:var(--ducky); font-weight:bold;">🦆 DUCKS: <span id="duck-count">0</span>/5</div>
-        <button id="evolve-btn" class="btn evolve-btn" onclick="megaEvolve()">MEGA EVOLVE GOOSE</button>
+    <div style="margin-bottom: 15px;">
+        <button class="btn" style="background:var(--gold)" onclick="openShop()">OPEN MULTIVERSAL SHOP</button>
+        <button id="evolve-btn" class="btn evolve-btn" style="display:none" onclick="megaEvolve()">EVOLVE GOLDEN GOOSE</button>
     </div>
 
-    <div id="inventory" style="overflow-y:auto; flex-grow:1; font-size: 0.65rem; border-top: 1px solid #333; padding-top: 10px;"></div>
+    <div class="inventory-list" id="inventory"></div>
 </div>
 
 <div class="main">
-    <div class="stage-box" id="s">📦</div>
-    <div id="rtag" style="font-weight:900; color:#444; margin-top: 10px; letter-spacing: 3px;">SYSTEM_IDLE</div>
-    <div id="display-name" style="font-size: 1.5rem; color: #fff; margin-top: 5px;">...</div>
+    <div class="stage-box" id="s">
+        <div id="aura" class="aura"></div>
+        <span id="animal-icon">📦</span>
+    </div>
+    <div id="rtag" style="font-weight:900; color:#555; margin-top: 15px; letter-spacing: 5px;">IDLE_SYSTEM</div>
+    <div id="display-name" style="font-size: 1.8rem; color: #fff; margin-top: 5px; text-shadow: 0 0 10px rgba(255,255,255,0.2);">Awaiting Input...</div>
     
-    <div style="width: 250px; margin-top: 20px;">
-        <button class="btn" style="font-size: 1.2rem;" onclick="roll()">ROLL ENTITY</button>
-        <div style="text-align:center; font-size:0.6rem; color:#333; margin-top:10px;">
-            <input type="checkbox" id="turbo"> HYPER_SPLICER
+    <div style="width: 280px; margin-top: 30px; z-index: 10;">
+        <button class="btn" style="font-size: 1.4rem; border-radius: 10px;" onclick="roll()">ROLL ENTITY</button>
+        <div style="text-align:center; font-size:0.6rem; color:#444; margin-top:10px;">
+            <input type="checkbox" id="turbo"> HYPER_SPLICER_ACTIVE
         </div>
     </div>
 </div>
 
-<div class="panel">
-    <h3 style="color:#0f0; margin:0 0 10px 0;">MUTATOR_LOG</h3>
-    <div id="console" style="background:#050505; border:1px solid #222; height:100%; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
-        > init variants...
+<div id="shop-modal" class="panel" style="position:fixed; left:50%; top:50%; transform:translate(-50%, -50%); display:none; border:2px solid var(--gold); z-index:2000;">
+    <h3 style="color:var(--gold); text-align:center;">MULTIVERSAL SHOP</h3>
+    <div class="shop-item">
+        <b>Splicer Speed+</b><br><small>Roll faster (100ms -> 50ms)</small>
+        <button class="btn" onclick="buy('speed', 1000)">1000 Rare</button>
     </div>
+    <div class="shop-item">
+        <b>Luck Capacitor</b><br><small>Permanent +10 Luck</small>
+        <button class="btn" onclick="buy('luck', 50)">50 Legendary</button>
+    </div>
+    <div class="shop-item">
+        <b>Artifact Scanner</b><br><small>Find random artifacts</small>
+        <button class="btn" onclick="buy('scan', 1)">1 Lucky Duck</button>
+    </div>
+    <button class="btn" style="background:#444; color:#fff;" onclick="openShop()">CLOSE</button>
 </div>
 
 <script>
     const tiers = ["Common", "Rare", "Legendary", "The Lucky Duck", "Zenith", "Supreme Goose"];
+    const colors = ["#95a5a6", "#3498db", "#f1c40f", "#fff700", "#00ff88", "#ff00ff"];
     const icons = ["🐹", "🐺", "🐲", "🦆", "♾️", "🦢"];
-    
-    // Variant Pool
+    const prefixes = ["Neon", "Void", "Cyber", "Shadow", "Glitch", "Primal", "Cosmic", "Plasma", "Aura", "Nuclear"];
     const animals = {
-        Common: ["Rat", "Pigeon", "Ant", "Sloth", "Crab", "Bat"],
-        Rare: ["Wolf", "Shark", "Eagle", "Panther", "Cobra", "Ram"],
-        Legendary: ["Dragon", "Phoenix", "Hydra", "Griffin", "Chimera", "Behemoth"]
+        Common: ["Rat", "Pigeon", "Ant", "Sloth", "Crab"],
+        Rare: ["Wolf", "Shark", "Eagle", "Panther", "Cobra"],
+        Legendary: ["Dragon", "Phoenix", "Hydra", "Griffin", "Chimera"]
     };
-    
-    const prefixes = ["Neon", "Void", "Cyber", "Shadow", "Glitch", "Primal", "Ancient", "Cosmic", "Bio", "Plasma"];
-    
-    let state = { lvl: 1, xp: 0, duckLuck: 0, gooseLuck: 0, inv: {} };
+
+    let state = { lvl: 1, xp: 0, duckLuck: 0, gooseLuck: 0, artifacts: 0, turboSpeed: 100, inv: {} };
     tiers.forEach(t => state.inv[t] = 0);
 
-    function log(msg) {
-        const con = document.getElementById('console');
-        con.innerHTML = `> ${msg}<br>` + con.innerHTML;
+    // Particle Engine
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Particle {
+        constructor(x, y, color) {
+            this.x = x; this.y = y; this.color = color;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = Math.random() * 6 - 3;
+            this.speedY = Math.random() * 6 - 3;
+            this.life = 1.0;
+        }
+        update() {
+            this.x += this.speedX; this.y += this.speedY;
+            this.life -= 0.02;
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = this.life;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
+
+    function createParticles(color) {
+        for(let i=0; i<20; i++) particles.push(new Particle(window.innerWidth/2, window.innerHeight/2, color));
+    }
+
+    function animate() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        particles = particles.filter(p => p.life > 0);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+    animate();
 
     function roll() {
         state.xp += 20;
         if(state.xp >= 100) { state.lvl++; state.xp = 0; }
         
-        let totalLuck = 1.0 + state.duckLuck + state.gooseLuck;
-        let rng = (Math.random() * 8000) / totalLuck;
+        let luck = 1.0 + state.duckLuck + state.gooseLuck + (state.artifacts * 2);
+        let rng = (Math.random() * 10000) / luck;
         let tIdx = 0;
         
-        if (rng < 1) { tIdx = 3; state.duckLuck += 0.5; log("VARIANT: Lucky Duck detected."); } 
-        else if (rng < 40) tIdx = 4;
-        else if (rng < 600) tIdx = 2;
+        if (rng < 1) { tIdx = 3; state.duckLuck += 0.5; } 
+        else if (rng < 30) tIdx = 4;
+        else if (rng < 500) tIdx = 2;
         else if (rng < 2000) tIdx = 1;
 
-        let tier = tiers[tIdx];
-        state.inv[tier]++;
-        
-        // Display Setup
-        const stage = document.getElementById('s');
-        stage.innerText = icons[tIdx];
-        stage.className = "stage-box " + (tier === "The Lucky Duck" ? "lucky-glow" : tier === "Supreme Goose" ? "goose-glow" : "");
-        
-        // Name Generation
-        let baseName = animals[tier] ? animals[tier][Math.floor(Math.random()*animals[tier].length)] : tier;
-        let pref = prefixes[Math.floor(Math.random()*prefixes.length)];
-        let finalName = (tIdx < 3) ? `${pref} ${baseName}` : (tIdx === 3) ? "QUACKMASTER-9000" : (tIdx === 5) ? "HONK_LORD_OMEGA" : "ZENITH_CORE";
-        
+        state.inv[tiers[tIdx]]++;
+        createParticles(colors[tIdx]);
+
+        // Update UI
+        const tier = tiers[tIdx];
+        document.getElementById('animal-icon').innerText = icons[tIdx];
         document.getElementById('rtag').innerText = tier.toUpperCase();
-        document.getElementById('rtag').style.color = (tIdx === 3) ? "var(--ducky)" : (tIdx === 5) ? "var(--goose)" : "#444";
-        document.getElementById('display-name').innerText = finalName;
+        document.getElementById('rtag').style.color = colors[tIdx];
+        document.getElementById('aura').style.background = `radial-gradient(circle, ${colors[tIdx]} 0%, transparent 70%)`;
         
+        let name = (tIdx < 3) ? prefixes[Math.floor(Math.random()*prefixes.length)] + " " + animals[tier][Math.floor(Math.random()*5)] : (tIdx === 3) ? "THE LUCKY DUCK" : "ZENITH ENTITY";
+        document.getElementById('display-name').innerText = name;
+
         updateUI();
+    }
+
+    function buy(item, cost) {
+        if(item === 'luck' && state.inv.Legendary >= cost) { state.inv.Legendary -= cost; state.gooseLuck += 10; }
+        if(item === 'speed' && state.inv.Rare >= cost) { state.inv.Rare -= cost; state.turboSpeed = 50; }
+        if(item === 'scan' && state.inv["The Lucky Duck"] >= cost) { state.inv["The Lucky Duck"] -= cost; state.artifacts++; }
+        updateUI();
+    }
+
+    function openShop() {
+        const s = document.getElementById('shop-modal');
+        s.style.display = s.style.display === 'none' ? 'block' : 'none';
     }
 
     function megaEvolve() {
         if(state.inv["The Lucky Duck"] >= 5) {
             state.inv["The Lucky Duck"] -= 5;
             state.inv["Supreme Goose"]++;
-            state.gooseLuck += 5.0;
-            state.duckLuck -= 2.5; // Removing the luck the 5 ducks gave
-            log("EVOLUTION COMPLETE: Supreme Golden Goose has ascended!");
+            state.gooseLuck += 25;
             updateUI();
         }
     }
 
     function updateUI() {
         document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('duck-count').innerText = state.inv["The Lucky Duck"];
-        document.getElementById('luck-total').innerText = (1.0 + state.duckLuck + state.gooseLuck).toFixed(1);
-        document.getElementById('goose-buff').innerText = state.gooseLuck;
+        document.getElementById('luck-total').innerText = (1.0 + state.duckLuck + state.gooseLuck + (state.artifacts * 2)).toFixed(1);
+        document.getElementById('art-count').innerText = state.artifacts;
+        document.getElementById('evolve-btn').style.display = state.inv["The Lucky Duck"] >= 5 ? 'block' : 'none';
         
-        // Show evolve button if 5 ducks
-        document.getElementById('evolve-btn').style.display = (state.inv["The Lucky Duck"] >= 5) ? 'block' : 'none';
-
         document.getElementById('inventory').innerHTML = tiers.slice().reverse().map(t => 
-            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
+            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between; color:${colors[tiers.indexOf(t)]}"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
         ).join("");
     }
 
-    setInterval(() => { if(document.getElementById('turbo').checked) roll(); }, 100);
+    let turboInterval;
+    document.getElementById('turbo').onchange = (e) => {
+        if(e.target.checked) turboInterval = setInterval(roll, state.turboSpeed);
+        else clearInterval(turboInterval);
+    };
 </script>
 </body>
 </html>
