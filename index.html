@@ -3,121 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BIO-ROLL: INFINITE</title>
+    <title>BIO-ROLL: DOGE EDITION</title>
     <style>
         :root { 
             --common: #888; --uncommon: #2ecc71; --rare: #3498db; 
             --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; 
+            --doge: #ffcc00;
         }
-        body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* The Stage */
-        #display-box { text-align: center; margin-bottom: 30px; transition: 0.1s; }
-        #emoji { font-size: 12rem; display: block; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); }
-        #name { font-size: 2.5rem; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
-        #rarity { font-size: 1rem; letter-spacing: 5px; opacity: 0.6; }
+        #display-box { text-align: center; margin-bottom: 20px; transition: 0.1s; }
+        #emoji { font-size: 10rem; display: block; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); line-height: 1; }
+        #name { font-size: 2.5rem; font-weight: 900; margin: 10px 0; text-transform: uppercase; letter-spacing: 2px; }
+        #rarity { font-size: 1rem; letter-spacing: 5px; opacity: 0.8; font-weight: bold; }
 
-        /* The Button */
+        .controls { display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .roll-trigger {
-            background: #fff; color: #000; border: none; padding: 25px 60px;
-            font-size: 2rem; font-weight: 900; cursor: pointer; border-radius: 10px;
-            box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: 0.1s;
+            background: #fff; color: #000; border: none; padding: 20px 50px;
+            font-size: 1.8rem; font-weight: 900; cursor: pointer; border-radius: 50px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.2); transition: 0.1s;
         }
-        .roll-trigger:active { transform: scale(0.95); background: #ccc; }
+        .roll-trigger:active { transform: scale(0.92); }
+        
+        .fast-mode-label { font-size: 0.9rem; color: #666; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-        /* Sidebar Stats */
-        .stats { position: absolute; bottom: 20px; left: 20px; font-size: 0.9rem; line-height: 1.5; color: #555; }
-        .inventory-peek { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 0.8rem; }
+        .stats { position: absolute; bottom: 20px; left: 20px; font-size: 0.8rem; color: #444; }
+        .inventory { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 0.8rem; line-height: 1.4; }
         
-        /* Rarity Effects */
-        .Mythic { text-shadow: 0 0 20px var(--mythic); color: var(--mythic); animation: shake 0.2s infinite; }
-        .God { text-shadow: 0 0 40px var(--god); color: var(--god); animation: zoom 0.5s infinite alternate; }
-        
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0,0); } }
-        @keyframes zoom { from { transform: scale(1); } to { transform: scale(1.1); } }
+        /* Special Doge Effect */
+        .Doge { color: var(--doge); text-shadow: 0 0 15px var(--doge); animation: wow 0.4s infinite alternate; }
+        @keyframes wow { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+
+        .Mythic { text-shadow: 0 0 20px var(--mythic); color: var(--mythic); }
+        .God { text-shadow: 0 0 30px var(--god); color: var(--god); animation: pulse 0.5s infinite alternate; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
     </style>
 </head>
 <body>
 
-<div class="inventory-peek" id="inv-count"></div>
+<div class="inventory" id="inv-count"></div>
 
 <div id="display-box">
-    <span id="rarity">TAP TO START</span>
+    <div id="rarity">READY TO ROLL</div>
     <span id="emoji">🥚</span>
     <div id="name">???</div>
 </div>
 
-<button class="roll-trigger" onclick="roll()">ROLL</button>
+<div class="controls">
+    <button class="roll-trigger" onclick="roll()">ROLL</button>
+    <label class="fast-mode-label">
+        <input type="checkbox" id="fast-mode"> FAST MODE (TURBO)
+    </label>
+</div>
 
 <div class="stats">
-    TOTAL ROLLS: <span id="stat-rolls">0</span><br>
-    LUCK MULTI: <span id="stat-luck">1.0</span>x
+    ROLLS: <span id="stat-rolls">0</span> | LUCK: <span id="stat-luck">1.0</span>x
 </div>
 
 <script>
-    // MASSIVE ANIMAL DATABASE
     const db = {
-        Common: ["🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐤","🐣","🐥","🦆","🦅","🦉","🦇","🐺","🐗","🐴","🦄","🐝","🪱","🐛","🦋","🐌","🐞","🐜","🦟","🦗","🕷️","🕸️","🦂","🐢","🐍","🦎","🦖","🦕","🐙","🦑","🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘","🦛","🦏","🐪","🐫","🦒","🦘","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦙","🐐","🦌","🐕","🐩","🐈","🐓","🦃","🦚","🦜","🦢","🦩","🕊️","🐇","🦝","🦨","🦡","🦦","🦥","🐁","🐀","🐿️","🦔"],
-        Uncommon: ["🦊✨","🦌❄️","🐍🟢","🦜🌈","🐺🌙","🐆💨","🦓🦓","🦦🦦"],
-        Rare: ["🦁👑","🦅⚡","🦈💎","🦖🔥","🦄💎","🐉🌪️"],
-        Legendary: ["🐲🔥","🦅❄️","🐺🌑","🦁☀️","🐋🌌"],
-        Mythic: ["👾","🌀","🌌","💀","⏳","☄️"],
-        God: ["☀️","⚡","👁️","💎"]
+        Common: [
+            {n: "Street Cat", e: "🐈"}, {n: "City Rat", e: "🐀"}, {n: "Pigeon", e: "🐦"}, 
+            {n: "Garden Snail", e: "🐌"}, {n: "Worker Ant", e: "🐜"}, {n: "Green Frog", e: "🐸"}
+        ],
+        Uncommon: [
+            {n: "Red Fox", e: "🦊"}, {n: "Wise Owl", e: "🦉"}, {n: "Forest Deer", e: "🦌"}, 
+            {n: "Fruit Bat", e: "🦇"}, {n: "Raccoon", e: "🦝"}
+        ],
+        Rare: [
+            {n: "DOGE", e: "🐕"}, {n: "Great Shark", e: "🦈"}, {n: "Mountain Lion", e: "🦁"}, 
+            {n: "Golden Eagle", e: "🦅"}, {n: "Polar Bear", e: "🐻‍❄️"}
+        ],
+        Legendary: [
+            {n: "Fire Dragon", e: "🐲"}, {n: "Ice Phoenix", e: "❄️🐦"}, {n: "Holy Unicorn", e: "🦄"}
+        ],
+        Mythic: [
+            {n: "VOID ENTITY", e: "🌀"}, {n: "GLITCH", e: "👾"}, {n: "GALAXY WHALE", e: "🐋🌌"}
+        ],
+        God: [
+            {n: "THE SUN", e: "☀️"}, {n: "ETERNITY", e: "💎"}, {n: "ZEUS", e: "⚡"}
+        ]
     };
 
     let s = { rolls: 0, luck: 1.0, inv: {C:0, U:0, R:0, L:0, M:0, G:0} };
+    let turboInterval = null;
 
     function roll() {
         s.rolls++;
         let rng = Math.random() * 1000000;
         let t = "Common";
         
-        // RNG Logic (Higher luck = better animals)
-        if (rng < (0.5 * s.luck)) t = "God";
-        else if (rng < (20 * s.luck)) t = "Mythic";
-        else if (rng < (1000 * s.luck)) t = "Legendary";
-        else if (rng < (15000 * s.luck)) t = "Rare";
-        else if (rng < (150000 * s.luck)) t = "Uncommon";
+        if (rng < (1 * s.luck)) t = "God";
+        else if (rng < (50 * s.luck)) t = "Mythic";
+        else if (rng < (2000 * s.luck)) t = "Legendary";
+        else if (rng < (30000 * s.luck)) t = "Rare";
+        else if (rng < (200000 * s.luck)) t = "Uncommon";
 
         const pool = db[t];
         const pick = pool[Math.floor(Math.random() * pool.length)];
         
-        // Track Inventory
         s.inv[t[0]]++;
 
-        // Visuals
-        document.getElementById('emoji').innerText = pick;
-        document.getElementById('name').innerText = t === "Common" ? "ANIMAL" : t;
-        document.getElementById('name').className = t;
-        document.getElementById('rarity').innerText = t.toUpperCase();
-        document.getElementById('rarity').style.color = `var(--${t.toLowerCase()})`;
+        const nameEl = document.getElementById('name');
+        const emojiEl = document.getElementById('emoji');
+        const rarityEl = document.getElementById('rarity');
 
-        // Shake on big hits
-        if(t !== "Common") {
-            document.body.style.backgroundColor = "#111";
-            setTimeout(() => document.body.style.backgroundColor = "#000", 50);
-        }
+        emojiEl.innerText = pick.e;
+        nameEl.innerText = pick.n;
+        
+        // Custom class for Doge
+        nameEl.className = pick.n === "DOGE" ? "Doge" : t;
+        rarityEl.innerText = t.toUpperCase();
+        rarityEl.style.color = `var(--${t.toLowerCase()})`;
 
         updateUI();
         save();
     }
 
+    // Fast Mode Logic
+    document.getElementById('fast-mode').addEventListener('change', (e) => {
+        if (e.target.checked) {
+            turboInterval = setInterval(roll, 100);
+        } else {
+            clearInterval(turboInterval);
+        }
+    });
+
     function updateUI() {
         document.getElementById('stat-rolls').innerText = s.rolls;
         document.getElementById('stat-luck').innerText = s.luck.toFixed(1);
         document.getElementById('inv-count').innerHTML = `
-            <span style="color:var(--common)">C:${s.inv.C}</span> 
-            <span style="color:var(--uncommon)">U:${s.inv.U}</span> 
-            <span style="color:var(--rare)">R:${s.inv.R}</span> 
-            <span style="color:var(--legendary)">L:${s.inv.L}</span><br>
-            <span style="color:var(--mythic)">M:${s.inv.M}</span> 
+            <span style="color:var(--common)">C:${s.inv.C}</span> | 
+            <span style="color:var(--uncommon)">U:${s.inv.U}</span> | 
+            <span style="color:var(--rare)">R:${s.inv.R}</span><br>
+            <span style="color:var(--legendary)">L:${s.inv.L}</span> | 
+            <span style="color:var(--mythic)">M:${s.inv.M}</span> | 
             <span style="color:var(--god)">G:${s.inv.G}</span>
         `;
     }
 
-    function save() { localStorage.setItem('bioRoll_Extreme', JSON.stringify(s)); }
+    function save() { localStorage.setItem('bioRoll_Doge', JSON.stringify(s)); }
     function load() {
-        const saved = localStorage.getItem('bioRoll_Extreme');
+        const saved = localStorage.getItem('bioRoll_Doge');
         if(saved) { s = JSON.parse(saved); updateUI(); }
     }
 
