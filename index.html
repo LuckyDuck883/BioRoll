@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bio-Roll: Infinite RNG</title>
+    <style>
+        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
+        #display { font-size: 3rem; margin: 20px; min-height: 80px; font-weight: bold; }
+        #rarity { font-size: 1.2rem; color: #888; }
+        button { padding: 15px 30px; font-size: 1.2rem; cursor: pointer; background: #444; color: white; border: none; border-radius: 8px; }
+        button:hover { background: #666; }
+        .Common { color: #ffffff; }
+        .Uncommon { color: #55ff55; text-shadow: 0 0 5px #22aa22; }
+        .Rare { color: #5555ff; text-shadow: 0 0 8px #2222aa; }
+        .Legendary { color: #ffff55; text-shadow: 0 0 15px #aaaa22; font-style: italic; }
+        .Mythic { color: #ff55ff; text-shadow: 0 0 20px #aa22aa; animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 10% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -2px); } }
+    </style>
+</head>
+<body>
+    <h1>🧬 BIO-ROLL RNG</h1>
+    <div id="rarity">Press Roll to Start</div>
+    <div id="display">---</div>
+    <button onclick="roll()">ROLL (1 in 1,000,000 Rare!)</button>
+    <p>Total Rolls: <span id="count">0</span></p>
+
+    <script>
+        let rolls = 0;
+        const animals = {
+            Common: ["Stray Cat", "Pigeon", "Rat", "Common Dog", "Goldfish"],
+            Uncommon: ["Axolotl", "Red Fox", "Emperor Penguin", "Electric Eel"],
+            Rare: ["Albino Lion", "Giant Squid", "Stardust Jellyfish"],
+            Legendary: ["Chronos Turtle", "Solar Serpent", "Void Wolf"],
+            Mythic: ["THE GLITCH WHALE", "GALAXY BUTTERFLY"]
+        };
+
+        function roll() {
+            rolls++;
+            document.getElementById('count').innerText = rolls;
+            let rng = Math.random() * 1000000;
+            let tier = "Common";
+            
+            if (rng < 1) tier = "Mythic";
+            else if (rng < 100) tier = "Legendary";
+            else if (rng < 2000) tier = "Rare";
+            else if (rng < 50000) tier = "Uncommon";
+
+            const list = animals[tier];
+            const result = list[Math.floor(Math.random() * list.length)];
+
+            const display = document.getElementById('display');
+            display.innerText = result;
+            display.className = tier;
+            document.getElementById('rarity').innerText = `Rarity: ${tier}`;
+        }
+    </script>
+</body>
+</html>
