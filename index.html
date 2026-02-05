@@ -3,172 +3,204 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Extreme</title>
+    <title>Bio-Roll: Ultimate</title>
     <style>
-        :root { --common: #ecf0f1; --uncommon: #2ecc71; --rare: #3498db; --legendary: #f1c40f; --mythic: #9b59b6; --shiny: #ff69b4; }
-        body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; text-align: center; overflow-x: hidden; margin: 0; }
-        .container { max-width: 500px; margin: 20px auto; background: #1a1a1a; padding: 25px; border-radius: 30px; border: 3px solid #333; position: relative; }
+        :root { 
+            --common: #ecf0f1; --uncommon: #2ecc71; --rare: #3498db; 
+            --legendary: #f1c40f; --mythic: #9b59b6; --shiny: #ff69b4; 
+            --bg: #0d0d0d; --panel: #1a1a1a;
+        }
+        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Animal Display & Effects */
-        #art-display { font-size: 8rem; margin: 15px 0; min-height: 150px; display: flex; align-items: center; justify-content: center; transition: transform 0.1s; }
-        #name-display { font-size: 2.2rem; font-weight: 900; text-transform: uppercase; }
+        /* Layout Structure */
+        .sidebar { width: 250px; background: var(--panel); border-right: 2px solid #333; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; padding: 20px; }
+        .shop-panel { width: 300px; background: var(--panel); border-left: 2px solid #333; padding: 20px; overflow-y: auto; }
+
+        /* Sidebar Stats */
+        .stat-card { background: #222; padding: 15px; border-radius: 12px; border: 1px solid #444; margin-bottom: 10px; }
+        .stat-card h4 { margin: 0 0 5px 0; font-size: 0.8rem; color: #888; text-transform: uppercase; }
+        .stat-val { font-size: 1.4rem; font-weight: bold; color: #fff; }
+
+        /* Central Roller */
+        #art-display { font-size: 10rem; margin: 20px 0; transition: transform 0.1s; filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); }
+        #name-display { font-size: 3rem; font-weight: 900; margin: 0; }
+        #rarity-label { letter-spacing: 5px; color: #555; font-weight: bold; }
         
-        /* Screen Shake Animation */
+        .roll-btn { 
+            width: 300px; padding: 25px; font-size: 1.5rem; background: #3498db; border: none; 
+            border-radius: 50px; color: white; cursor: pointer; font-weight: bold;
+            box-shadow: 0 8px 0 #21618c; transition: 0.1s; margin-top: 30px;
+        }
+        .roll-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #21618c; }
+
+        /* Shop Items */
+        .shop-item { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 15px; border: 1px solid #333; transition: 0.2s; }
+        .shop-item:hover { border-color: var(--legendary); }
+        .shop-item p { font-size: 0.8rem; margin: 5px 0; color: #aaa; }
+        .buy-btn { width: 100%; background: #27ae60; border: none; padding: 8px; border-radius: 5px; color: white; cursor: pointer; font-weight: bold; }
+        .buy-btn:disabled { background: #444; cursor: not-allowed; }
+
+        /* Effects */
         .shake { animation: shake 0.3s; }
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(-1deg); } 50% { transform: translate(3px, 2px) rotate(1deg); } 100% { transform: translate(0,0); } }
-
-        /* Floating Text Effect */
-        .floating-text { position: absolute; animation: floatUp 1s forwards; font-weight: bold; pointer-events: none; }
-        @keyframes floatUp { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-100px); } }
-
-        /* UI Styling */
-        .stats-bar { display: flex; justify-content: space-around; background: #222; padding: 15px; border-radius: 20px; margin-bottom: 15px; border: 1px solid #444; }
-        button { width: 100%; padding: 18px; font-size: 1.3rem; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 15px; font-weight: bold; box-shadow: 0 6px 0 #21618c; margin-bottom: 10px; }
-        button:active { transform: translateY(3px); box-shadow: 0 3px 0 #21618c; }
-        button:disabled { background: #555; box-shadow: none; cursor: not-allowed; }
-
-        .shop-container { background: #111; padding: 15px; border-radius: 20px; margin-top: 20px; text-align: left; border: 1px solid #444; }
-        .shop-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #222; }
-        
-        /* Rarity Classes */
-        .Common { color: var(--common); }
-        .Uncommon { color: var(--uncommon); }
-        .Rare { color: var(--rare); filter: drop-shadow(0 0 5px var(--rare)); }
-        .Legendary { color: var(--legendary); filter: drop-shadow(0 0 15px var(--legendary)); animation: pulse 1s infinite; }
-        .Mythic { color: var(--mythic); filter: drop-shadow(0 0 25px var(--mythic)); animation: glitch 0.2s infinite; }
-        .is-shiny { filter: drop-shadow(0 0 20px var(--shiny)) !important; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes glitch { 0% { transform: skew(2deg); } 50% { transform: skew(-2deg); } 100% { transform: skew(0); } }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(-5px, 5px); } 75% { transform: translate(5px, -5px); } }
+        .Mythic { animation: glitch 0.2s infinite; color: var(--mythic); text-shadow: 0 0 30px var(--mythic); }
+        @keyframes glitch { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.02); } }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-card">
-    <div class="stats-bar">
-        <div>🎰 <span id="count">0</span></div>
-        <div>🍀 <span id="luck-stat">1.0</span>x</div>
-        <div>✨ <span id="shiny-count">0</span></div>
+<div class="sidebar">
+    <h2 style="color:var(--rare)">📊 LOGS</h2>
+    <div class="stat-card">
+        <h4>Total Rolls</h4>
+        <div class="stat-val" id="total-rolls">0</div>
     </div>
+    <div class="stat-card">
+        <h4>Luck Level</h4>
+        <div class="stat-val" style="color:var(--uncommon)"><span id="luck-val">1.0</span>x</div>
+    </div>
+    <div class="stat-card">
+        <h4>Shinies Found</h4>
+        <div class="stat-val" style="color:var(--shiny)" id="shiny-val">0</div>
+    </div>
+    <div style="margin-top:auto; font-size: 0.7rem; color:#555">BIO-ROLL v6.0</div>
+</div>
 
+<div class="main-game" id="game-area">
+    <div id="rarity-label">CLICK TO START</div>
     <div id="art-display">🥚</div>
-    <div id="name-display">ROLL ME</div>
-    
-    <button id="roll-btn" onclick="roll()">ROLL 🐾</button>
+    <h1 id="name-display">???</h1>
+    <button class="roll-btn" onclick="roll()">ROLL 🐾</button>
+</div>
 
-    <div class="shop-container">
-        <h3 style="margin: 0 0 10px 0; color: #f1c40f;">🏪 The Upgrade Shop</h3>
-        <div class="shop-item">
-            <span><b>Auto-Roll Bot</b> (1s/roll)</span>
-            <button style="width:auto; padding:5px 10px; font-size:0.8rem;" id="auto-buy" onclick="buyAuto()">Cost: 5 Uncommons</button>
-        </div>
-        <div class="shop-item">
-            <span><b>Shiny Magnet</b> (2x Shiny Chance)</span>
-            <button style="width:auto; padding:5px 10px; font-size:0.8rem;" onclick="buy('shiny', 20)">Cost: 20 Uncommons</button>
-        </div>
-        <p id="inv-stats" style="font-size: 0.7rem; color: #666; margin-top: 10px;">C:0 U:0 R:0 L:0 M:0</p>
+<div class="shop-panel">
+    <h2 style="color:var(--legendary)">🛒 UPGRADES</h2>
+    
+    <div class="shop-item">
+        <b>🍀 Rabbit Foot</b>
+        <p>+0.2 Luck Multiplier</p>
+        <button class="buy-btn" id="buy-luck" onclick="buy('luck', 20, 'Common')">Cost: 20 Common</button>
     </div>
+
+    <div class="shop-item">
+        <b>🤖 Auto-Bot</b>
+        <p>Rolls every 1s automatically</p>
+        <button class="buy-btn" id="buy-auto" onclick="buyAuto()">Cost: 10 Uncommon</button>
+    </div>
+
+    <div class="shop-item">
+        <b>🧲 Shiny Magnet</b>
+        <p>Double your Shiny odds</p>
+        <button class="buy-btn" onclick="buy('shiny', 5, 'Rare')">Cost: 5 Rare</button>
+    </div>
+
+    <div class="shop-item">
+        <b>⚡ Super Speed</b>
+        <p>Auto-roll speed 2x faster</p>
+        <button class="buy-btn" onclick="buySpeed()">Cost: 2 Legendary</button>
+    </div>
+
+    <hr style="border: 1px solid #333; margin: 20px 0;">
+    <h3 style="font-size: 0.9rem;">INVENTORY</h3>
+    <div id="inv-list" style="font-size: 0.8rem; line-height: 1.6;"></div>
 </div>
 
 <script>
     const database = {
-        Common: [{n: "Slime", a: "💧"}, {n: "Pigeon", a: "🐦"}, {n: "Rat", a: "🐀"}, {n: "Cat", a: "🐈"}, {n: "Ant", a: "🐜"}],
-        Uncommon: [{n: "Fox", a: "🦊"}, {n: "Owl", a: "🦉"}, {n: "Snake", a: "🐍"}, {n: "Deer", a: "🦌"}],
-        Rare: [{n: "Lion", a: "🦁"}, {n: "Shark", a: "🦈"}, {n: "Tiger", a: "🐯"}, {n: "Mammoth", a: "🦣"}],
-        Legendary: [{n: "Phoenix", a: "🔥"}, {n: "Dragon", a: "🐲"}, {n: "Unicorn", a: "🦄"}, {n: "Hydra", a: "🐍🐍"}],
-        Mythic: [{n: "Cthulhu", a: "🐙"}, {n: "Godzilla", a: "🦖"}, {n: "Galaxy Whale", a: "🐋🌠"}]
+        Common: [{n:"Ant",a:"🐜"},{n:"Mouse",a:"🖱️"},{n:"Cat",a:"🐈"},{n:"Snail",a:"🐌"},{n:"Rat",a:"🐀"}],
+        Uncommon: [{n:"Fox",a:"🦊"},{n:"Owl",a:"🦉"},{n:"Deer",a:"🦌"},{n:"Snake",a:"🐍"}],
+        Rare: [{n:"Lion",a:"🦁"},{n:"Shark",a:"🦈"},{n:"Tiger",a:"🐯"},{n:"Gorilla",a:"🦍"}],
+        Legendary: [{n:"Dragon",a:"🐉"},{n:"Phoenix",a:"🔥"},{n:"Unicorn",a:"🦄"}],
+        Mythic: [{n:"COSMIC ENTITY",a:"🌌"},{n:"THE VOID",a:"🌀"},{n:"GLITCH",a:"👾"}]
     };
 
-    let s = { 
-        rolls: 0, luck: 1.0, shinies: 0, shinyMod: 100, hasAuto: false,
-        inv: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0 } 
+    let s = {
+        rolls: 0, luck: 1.0, shinies: 0, shinyRate: 100,
+        auto: false, autoSpeed: 1000,
+        inv: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0 }
     };
 
-    let autoInterval = null;
-
-    function load() {
-        const saved = localStorage.getItem('bioRoll_v5');
-        if (saved) { s = JSON.parse(saved); updateUI(); if(s.hasAuto) startAuto(); }
-    }
-
-    function save() { localStorage.setItem('bioRoll_v5', JSON.stringify(s)); }
-
-    function updateUI() {
-        document.getElementById('count').innerText = s.rolls;
-        document.getElementById('luck-stat').innerText = s.luck.toFixed(1);
-        document.getElementById('shiny-count').innerText = s.shinies;
-        document.getElementById('inv-stats').innerText = `C:${s.inv.Common} U:${s.inv.Uncommon} R:${s.inv.Rare} L:${s.inv.Legendary} M:${s.inv.Mythic}`;
-        if(s.hasAuto) document.getElementById('auto-buy').innerText = "OWNED";
-    }
-
-    function spawnFloaty(text, color) {
-        const el = document.createElement('div');
-        el.innerText = text;
-        el.className = 'floating-text';
-        el.style.color = color;
-        el.style.left = Math.random() * 80 + 10 + "%";
-        el.style.top = "50%";
-        document.getElementById('main-card').appendChild(el);
-        setTimeout(() => el.remove(), 1000);
-    }
+    let timer = null;
 
     function roll() {
         s.rolls++;
         let rng = Math.random() * 1000000;
         let t = "Common";
         if (rng < (1 * s.luck)) t = "Mythic";
-        else if (rng < (200 * s.luck)) t = "Legendary";
-        else if (rng < (5000 * s.luck)) t = "Rare";
-        else if (rng < (120000 * s.luck)) t = "Uncommon";
+        else if (rng < (250 * s.luck)) t = "Legendary";
+        else if (rng < (6000 * s.luck)) t = "Rare";
+        else if (rng < (150000 * s.luck)) t = "Uncommon";
 
         s.inv[t]++;
         const pick = database[t][Math.floor(Math.random() * database[t].length)];
-        let isShiny = (Math.random() * s.shinyMod) < 1;
+        let isShiny = (Math.random() * s.shinyRate) < 1;
+        if(isShiny) s.shinies++;
 
+        // UI Updates
         const art = document.getElementById('art-display');
-        const name = document.getElementById('name-display');
-        const card = document.getElementById('main-card');
-
-        // Effects for Rares+
-        if (t !== "Common") {
-            card.classList.remove('shake');
-            void card.offsetWidth; // Trigger reflow
-            card.classList.add('shake');
-            spawnFloaty("+1 " + t, "var(--" + t.toLowerCase() + ")");
-        }
-
         art.innerText = pick.a;
-        name.innerText = (isShiny ? "✨ " : "") + pick.n;
         art.className = (isShiny ? "is-shiny " : "") + t;
-        name.className = t;
-
-        if (isShiny) {
-            s.shinies++;
-            spawnFloaty("SHINY!", "#ff69b4");
-        }
         
+        document.getElementById('name-display').innerText = (isShiny ? "✨ " : "") + pick.n;
+        document.getElementById('name-display').className = t;
+        document.getElementById('rarity-label').innerText = t;
+
+        if (t === "Legendary" || t === "Mythic") {
+            document.getElementById('game-area').classList.add('shake');
+            setTimeout(()=>document.getElementById('game-area').classList.remove('shake'), 300);
+        }
+
         updateUI(); save();
     }
 
-    function buyAuto() {
-        if (!s.hasAuto && s.inv.Uncommon >= 5) {
-            s.inv.Uncommon -= 5;
-            s.hasAuto = true;
-            startAuto();
+    function updateUI() {
+        document.getElementById('total-rolls').innerText = s.rolls;
+        document.getElementById('luck-val').innerText = s.luck.toFixed(1);
+        document.getElementById('shiny-val').innerText = s.shinies;
+        
+        let invHTML = "";
+        for(let key in s.inv) {
+            invHTML += `<div style="color:var(--${key.toLowerCase()})">${key}: ${s.inv[key]}</div>`;
+        }
+        document.getElementById('inv-list').innerHTML = invHTML;
+    }
+
+    function buy(type, cost, currency) {
+        if (s.inv[currency] >= cost) {
+            s.inv[currency] -= cost;
+            if(type === 'luck') s.luck += 0.2;
+            if(type === 'shiny') s.shinyRate /= 2;
             updateUI(); save();
+        } else { alert("Not enough " + currency + "!"); }
+    }
+
+    function buyAuto() {
+        if (!s.auto && s.inv.Uncommon >= 10) {
+            s.inv.Uncommon -= 10; s.auto = true;
+            startTimer(); updateUI(); save();
         }
     }
 
-    function startAuto() {
-        if (autoInterval) clearInterval(autoInterval);
-        autoInterval = setInterval(roll, 1000);
+    function buySpeed() {
+        if (s.auto && s.inv.Legendary >= 2) {
+            s.inv.Legendary -= 2; s.autoSpeed = 500;
+            startTimer(); updateUI(); save();
+        }
     }
 
-    function buy(type, cost) {
-        if (type === 'shiny' && s.inv.Uncommon >= cost) {
-            s.inv.Uncommon -= cost; s.shinyMod /= 2;
-            updateUI(); save();
-            alert("Shinies are now 2x more common!");
+    function startTimer() {
+        if (timer) clearInterval(timer);
+        timer = setInterval(roll, s.autoSpeed);
+    }
+
+    function save() { localStorage.setItem('bioRoll_v6', JSON.stringify(s)); }
+    function load() {
+        const saved = localStorage.getItem('bioRoll_v6');
+        if (saved) { 
+            s = JSON.parse(saved); 
+            updateUI(); 
+            if(s.auto) startTimer();
         }
     }
 
