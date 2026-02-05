@@ -8,224 +8,149 @@
         :root { 
             --common: #95a5a6; --rare: #3498db; --legendary: #f1c40f; --godly: #ff3e3e; 
             --ascended: #00ffff; --void: #2c3e50; --omnipotent: #f39c12; --zenith: #00ff88;
-            --panel: rgba(15, 15, 15, 0.98);
+            --error: #ff0055; --panel: rgba(10, 10, 10, 0.98);
         }
         
-        body { background: #050505; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; transition: 0.1s; }
+        body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
+        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
 
-        .sidebar, .shop-panel { width: 300px; background: var(--panel); border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar, .shop-panel { width: 280px; background: var(--panel); border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
         .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        /* Boss Raid Area */
-        #boss-ui { position: absolute; top: 20px; background: rgba(255,0,0,0.1); border: 2px solid #ff3e3e; padding: 10px 30px; border-radius: 10px; display: none; text-align: center; z-index: 150; animation: pulse 1s infinite alternate; }
-
-        /* Stage */
-        #display-stage { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .skin-layer { position: absolute; font-size: 9rem; z-index: 5; transition: transform 0.1s; }
-        .aura-layer { position: absolute; font-size: 15rem; opacity: 0.2; filter: blur(50px); animation: auraPulse 3s infinite alternate; }
-        @keyframes auraPulse { from { transform: scale(0.8); opacity: 0.1; } to { transform: scale(1.2); opacity: 0.3; } }
-
-        /* UI elements */
-        .gamble-btn { width: 100%; padding: 20px; border: none; border-radius: 15px; cursor: pointer; font-weight: 900; background: #fff; color: #000; font-size: 1.8rem; box-shadow: 0 6px 0 #999; margin-top: 10px; }
-        .gamble-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #666; }
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 10px; padding: 10px; margin-bottom: 8px; font-size: 0.85rem; }
-        .shop-btn { background: #27ae60; color: #fff; width: 100%; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; font-size: 0.75rem; }
-        .tag { font-size: 0.6rem; letter-spacing: 2px; color: #666; text-transform: uppercase; margin-bottom: 2px; display: block; }
+        /* Admin Console Styling */
+        #admin-box { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 300px; background: #111; border: 1px solid #0f0; padding: 5px; z-index: 1000; }
+        #admin-input { background: #000; border: none; color: #0f0; width: 70%; outline: none; font-size: 0.8rem; }
         
-        #inv-list { font-size: 0.75rem; }
-        .xp-bar { width: 100%; height: 6px; background: #222; border-radius: 3px; margin-top: 5px; overflow: hidden; }
-        #xp-fill { width: 0%; height: 100%; background: var(--zenith); transition: 0.3s; }
-        .shake { animation: shake 0.3s; }
-        @keyframes shake { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(0,0); } }
+        /* Layout Fixes */
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 8px; margin-bottom: 5px; font-size: 0.75rem; }
+        .gamble-btn { width: 100%; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 900; background: #fff; color: #000; font-size: 1.5rem; text-transform: uppercase; }
+        
+        /* Troll Effects */
+        .flip { transform: scaleY(-1); }
+        .glitch { animation: glitchAnim 0.1s infinite; }
+        @keyframes glitchAnim { 0% { opacity: 1; } 50% { opacity: 0.1; transform: skew(10deg); } 100% { opacity: 1; } }
+        
+        #display-stage { font-size: 8rem; position: relative; height: 200px; display: flex; align-items: center; justify-content: center; }
+        .tag { font-size: 0.6rem; letter-spacing: 2px; color: #555; text-transform: uppercase; }
+        #inv-list { font-size: 0.65rem; }
     </style>
 </head>
-<body>
+<body id="game-body">
 
 <div id="flash"></div>
 
 <div class="sidebar">
-    <h2 style="color:var(--zenith); text-align: center; margin: 0 0 10px 0;">DABESTGAME</h2>
+    <h2 style="color:var(--zenith); text-align: center; margin:0;">DABESTGAME</h2>
     <div class="stat-card">
-        <span class="tag">Rank</span>
         <b>LVL <span id="lvl">1</span></b>
-        <div class="xp-bar"><div id="xp-fill"></div></div>
+        <div style="width:100%; height:4px; background:#222; margin-top:4px;"><div id="xp-fill" style="width:0%; height:100%; background:var(--zenith);"></div></div>
     </div>
-    <div class="stat-card">
-        <span class="tag">Race Stats</span>
-        Wins: <b id="wins-stat" style="color:var(--rare)">0</b>
-    </div>
-    <div class="stat-card">
-        <span class="tag">Combat Power</span>
-        ATK: <b id="atk-stat" style="color:var(--godly)">10</b>
-    </div>
-    <button class="shop-btn" style="background:#e67e22" onclick="craftVehicle()">FUSE 10 SAMPLES</button>
-    <hr style="width:100%; border:0; border-top:1px solid #222; margin: 10px 0;">
-    <div id="inv-list"></div>
+    <div class="stat-card">LUCK: <span id="luck-val">1.0</span>x</div>
+    <div class="stat-card">WINS: <span id="wins-val">0</span></div>
+    <div id="inv-list" style="margin-top: 10px;"></div>
 </div>
 
-<div class="main-game" id="main-area">
-    <div id="boss-ui">
-        <div class="tag" style="color:#ff3e3e">BOSS APPEARED!</div>
-        <div id="boss-name" style="font-weight:900; font-size: 1.2rem;">OMEGA GLITCH</div>
-        <div style="font-size: 0.8rem;">HP: <span id="boss-hp">100</span></div>
-        <button class="shop-btn" onclick="attackBoss()" style="background:#ff3e3e">ATTACK!</button>
+<div class="main-game" id="main-view">
+    <div id="display-stage">🥚</div>
+    <div id="rarity-tag" style="font-weight: 900; font-size: 1.2rem;">READY</div>
+    <div id="display-name" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 10px;">Gamble?</div>
+    
+    <div style="width: 250px;">
+        <button class="gamble-btn" onclick="roll()">GAMBLE TIME</button>
+        <div style="display:flex; justify-content: space-between; margin-top: 10px;">
+            <label style="font-size: 0.6rem;"><input type="checkbox" id="turbo"> TURBO</label>
+            <span class="tag">VER: 40.0.1</span>
+        </div>
     </div>
 
-    <div id="display-stage">
-        <div id="aura-layer" class="aura-layer"></div>
-        <div id="skin-layer" class="skin-layer">📦</div>
-    </div>
-    <div id="rarity-tag" style="font-weight: 900; letter-spacing: 5px; margin-top: 10px;">IDLE</div>
-    <div id="display-name" style="font-size: 2.2rem; font-weight: 900; margin-bottom: 20px;">ROLL NOW</div>
-    
-    <div style="width: 280px;">
-        <button class="gamble-btn" onclick="roll()">Gamble Time</button>
-        <label style="display: block; text-align: center; margin-top: 10px; color: #444; font-size: 0.7rem;">
-            <input type="checkbox" id="turbo"> TURBO MODE
-        </label>
+    <div id="admin-box">
+        <span style="color:#0f0;">$</span>
+        <input type="text" id="admin-input" placeholder="enter admin cmd..." onkeydown="if(event.key==='Enter') doAdmin()">
     </div>
 </div>
 
 <div class="shop-panel">
-    <span class="tag">Black Market</span>
-    <div class="stat-card">
-        <b>Luck Booster</b>
-        <button class="shop-btn" onclick="buy('luck', 50, 'Common')">50 Common</button>
-    </div>
-    <div class="stat-card">
-        <b>Sharpen Claws (ATK)</b>
-        <button class="shop-btn" onclick="buy('atk', 20, 'Rare')">20 Rare</button>
-    </div>
-    <div class="stat-card">
-        <b>Tier Collector</b>
-        <button class="shop-btn" onclick="buy('tier', 5, 'Legendary')">5 Legendary</button>
-    </div>
-    <div class="stat-card">
-        <b>Zenith Call</b>
-        <button class="shop-btn" onclick="buy('zenith', 1000, 'wins')">1000 Wins</button>
-    </div>
-    <div class="stat-card">
-        <b>Auto-Splicer</b>
-        <button class="shop-btn" id="auto-btn" onclick="buy('auto', 10, 'Godly')">10 Godly</button>
-    </div>
+    <span class="tag">Extreme Shop</span>
+    <div class="stat-card"><b>Luck+</b> <button onclick="buy('luck', 50)" class="btn">50 Com</button></div>
+    <div class="stat-card"><b>Auto</b> <button onclick="buy('auto', 10)" class="btn">10 God</button></div>
+    <div class="stat-card"><b>Warp</b> <button onclick="buy('warp', 100)" class="btn">100 Win</button></div>
 </div>
 
 <script>
-    const database = {
-        Common: { c: "#95a5a6", a: {n:"Rat",e:"🐀",p:"🌪️"}, v: {n:"Bike",e:"🚲",p:"💨"}},
-        Rare: { c: "#3498db", a: {n:"Wolf",e:"🐺",p:"❄️"}, v: {n:"Racer",e:"🏎️",p:"🏁"}},
-        Legendary: { c: "#f1c40f", a: {n:"Lion",e:"🦁",p:"👑"}, v: {n:"Jet",e:"🛩️",p:"☁️"}},
-        Godly: { c: "#ff3e3e", a: {n:"Phoenix",e:"🐦‍🔥",p:"🔥"}, v: {n:"Rocket",e:"🚀",p:"☄️"}},
-        Void: { c: "#2c3e50", a: {n:"Shadow",e:"🐈‍⬛",p:"⬛"}, v: {n:"UFO",e:"🛸",p:"🌑"}},
-        Zenith: { c: "#00ff88", a: {n:"OMEGA",e:"♾️",p:"🟢"}, v: {n:"CORE",e:"💎",p:"⚪"}}
-    };
+    const rarities = ["Common", "Sturdy", "Uncommon", "Vibrant", "Rare", "Elite", "Legendary", "Exotic", "Mythic", "Eldritch", "Ancient", "Primal", "Godly", "Demonic", "Angelic", "Fallen", "Ascended", "Celestial", "Galactic", "Universal", "Multiversal", "Dimensional", "Void", "Abyssal", "Singularity", "Infinity", "Eternal", "Omnipotent", "Alpha", "Omega", "Zenith", "Reality", "Creator", "System", "Nuclear", "Corrupted", "Glitched", "Error", "404", "THE_END"];
+    const icons = ["🐀", "🐺", "🦁", "🐉", "🐙", "🦖", "🐦‍🔥", "🛸", "🚢", "🏎️", "🚀", "🪐", "💎", "♾️", "👁️"];
+    
+    let s = { rolls: 0, exp: 0, lvl: 1, luck: 1, wins: 0, inv: {} };
+    rarities.forEach(r => s.inv[r] = 0);
 
-    let s = { rolls: 0, exp: 0, lvl: 1, luck: 1, wins: 0, atk: 10, inv: {} };
-    for(let k in database) s.inv[k] = { animals: 0, vehicles: 0 };
-
-    let boss = { active: false, hp: 0, maxHp: 0 };
-
-    function roll(forced = null) {
-        s.rolls++; s.exp += 15;
-        if(s.exp >= 100) { s.lvl++; s.exp = 0; spawnBoss(); }
+    function roll() {
+        s.rolls++; s.exp += 10;
+        if(s.exp >= 100) { s.lvl++; s.exp = 0; }
         
-        let t = "Common";
-        if (forced) t = forced; else {
-            let rng = Math.random() * 1000;
-            let l = s.luck;
-            if (rng < 0.5 * l) t = "Zenith";
-            else if (rng < 5 * l) t = "Void";
-            else if (rng < 20 * l) t = "Godly";
-            else if (rng < 100 * l) t = "Legendary";
-            else if (rng < 300 * l) t = "Rare";
-        }
+        let l = s.luck;
+        let rng = Math.random() * 1000000;
+        let tierIndex = 0;
+        
+        if (rng < 0.01 * l) tierIndex = 39;
+        else if (rng < 1 * l) tierIndex = 30;
+        else if (rng < 100 * l) tierIndex = 12;
+        else if (rng < 5000 * l) tierIndex = 4;
+        else tierIndex = Math.floor(Math.random() * 3);
 
-        s.inv[t].animals++;
-        updateDisplay(t, database[t].a);
+        let t = rarities[tierIndex];
+        s.inv[t]++;
+        
+        document.getElementById('display-stage').innerText = icons[tierIndex % icons.length];
+        document.getElementById('rarity-tag').innerText = t;
+        document.getElementById('display-name').innerText = "UNIT_" + Math.floor(Math.random()*999);
+        
+        if(tierIndex > 30) {
+            document.getElementById('flash').style.opacity = 1;
+            setTimeout(() => document.getElementById('flash').style.opacity = 0, 100);
+        }
         updateUI();
     }
 
-    function spawnBoss() {
-        boss.active = true;
-        boss.maxHp = s.lvl * 150;
-        boss.hp = boss.maxHp;
-        document.getElementById('boss-ui').style.display = 'block';
-        document.getElementById('boss-hp').innerText = boss.hp;
-    }
+    function doAdmin() {
+        let input = document.getElementById('admin-input');
+        let cmd = input.value.toLowerCase();
+        input.value = '';
 
-    function attackBoss() {
-        if(!boss.active) return;
-        boss.hp -= s.atk;
-        document.getElementById('main-area').classList.add('shake');
-        setTimeout(() => document.getElementById('main-area').classList.remove('shake'), 200);
-        
-        if(boss.hp <= 0) {
-            boss.active = false;
-            document.getElementById('boss-ui').style.display = 'none';
-            s.wins += 50;
-            alert("BOSS DEFEATED! +50 Wins");
-        }
-        document.getElementById('boss-hp').innerText = Math.max(0, boss.hp);
-    }
-
-    function craftVehicle() {
-        for(let k in s.inv) {
-            if(s.inv[k].animals >= 10) {
-                s.inv[k].animals -= 10;
-                s.inv[k].vehicles++;
-                updateDisplay(k, database[k].v);
-                updateUI();
-                return;
-            }
+        if(cmd.includes('give')) {
+            alert("ADMIN ERROR: INSUFFICIENT PERMISSIONS. SHUTTING DOWN SYSTEM...");
+            document.body.classList.add('glitch');
+            setTimeout(() => document.body.classList.remove('glitch'), 2000);
+        } else if(cmd.includes('luck')) {
+            alert("LUCK OVERFLOW DETECTED.");
+            document.body.classList.add('flip');
+            setTimeout(() => document.body.classList.remove('flip'), 5000);
+        } else {
+            alert("Command not found. Redirecting to Troll.exe");
+            window.roll = function() { alert("Haha you thought!"); window.location.reload(); };
         }
     }
 
-    function buy(item, cost, curr) {
-        let canBuy = (curr === 'wins' ? s.wins >= cost : s.inv[curr].animals >= cost);
-        if(canBuy) {
-            if(curr === 'wins') s.wins -= cost; else s.inv[curr].animals -= cost;
-            if(item === 'luck') s.luck += 1;
-            if(item === 'atk') s.atk += 20;
-            if(item === 'zenith') roll('Zenith');
-            if(item === 'auto') setInterval(roll, 2000);
-            updateUI();
-        }
-    }
-
-    function updateDisplay(t, p) {
-        const color = database[t].c;
-        document.getElementById('rarity-tag').innerText = t;
-        document.getElementById('rarity-tag').style.color = color;
-        document.getElementById('display-name').innerText = p.n;
-        document.getElementById('display-name').style.color = color;
-        document.getElementById('skin-layer').innerText = p.e;
-        document.getElementById('aura-layer').innerText = p.p;
-        if(["Zenith", "Void", "Godly"].includes(t)) {
-            document.getElementById('flash').style.opacity = "1";
-            setTimeout(() => document.getElementById('flash').style.opacity = "0", 200);
-        }
+    function buy(type, cost) {
+        if(type === 'luck' && s.inv.Common >= cost) { s.inv.Common -= cost; s.luck += 0.5; }
+        if(type === 'auto' && s.inv.Godly >= cost) { s.inv.Godly -= cost; setInterval(roll, 1000); }
+        if(type === 'warp' && s.wins >= cost) { s.wins -= cost; s.lvl += 5; }
+        updateUI();
     }
 
     function updateUI() {
         document.getElementById('lvl').innerText = s.lvl;
         document.getElementById('xp-fill').style.width = s.exp + "%";
-        document.getElementById('wins-stat').innerText = s.wins;
-        document.getElementById('atk-stat').innerText = s.atk;
+        document.getElementById('luck-val').innerText = s.luck.toFixed(1);
+        document.getElementById('wins-val').innerText = s.wins;
+        
         let html = "";
-        for(let k in s.inv) {
-            if(s.inv[k].animals > 0 || s.inv[k].vehicles > 0) {
-                html += `<div style="color:${database[k].c}">${k}: 🐻${s.inv[k].animals} | 🏎️${s.inv[k].vehicles}</div>`;
-            }
-        }
+        rarities.slice().reverse().forEach(r => {
+            if(s.inv[r] > 0) html += `<div>${r}: ${s.inv[r]}</div>`;
+        });
         document.getElementById('inv-list').innerHTML = html;
     }
 
-    let turbo;
-    document.getElementById('turbo').onchange = (e) => {
-        if(e.target.checked) turbo = setInterval(roll, 100);
-        else clearInterval(turbo);
-    };
+    setInterval(() => { if(document.getElementById('turbo').checked) roll(); }, 100);
 </script>
 </body>
 </html>
