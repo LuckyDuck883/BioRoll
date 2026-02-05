@@ -3,83 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Fixed Interaction</title>
+    <title>Bio-Roll: Biome Leveling</title>
     <style>
         :root { 
             --common: #95a5a6; --uncommon: #2ecc71; --rare: #3498db; 
             --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; 
-            --shiny: #ff69b4; --doge: #ffcc00; --panel: rgba(12, 12, 12, 0.98);
+            --shiny: #ff69b4; --panel: rgba(15, 15, 15, 0.98);
         }
         
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Fixed: Canvas must not block clicks */
+        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; transition: 0.8s; }
         #particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
-        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; transition: opacity 0.1s; }
-
+        
         /* Layout Panels */
-        .sidebar { width: 280px; background: var(--panel); border-right: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar, .shop-panel { width: 280px; background: var(--panel); border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
         .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 50; }
-        .shop-panel { width: 300px; background: var(--panel); border-left: 1px solid #222; padding: 20px; z-index: 100; overflow-y: auto; }
 
-        /* Display Stage */
+        /* Level Bar */
+        .level-container { width: 100%; height: 10px; background: #222; border-radius: 5px; margin-top: 10px; overflow: hidden; }
+        #level-progress { width: 0%; height: 100%; background: var(--rare); transition: 0.3s; }
+
+        /* Stage */
         #display-stage { position: relative; width: 350px; height: 350px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .skin-layer { position: absolute; font-size: 10rem; z-index: 5; pointer-events: none; }
-        .aura-layer { position: absolute; font-size: 15rem; opacity: 0.15; filter: blur(45px); animation: pulse 3s infinite alternate; pointer-events: none; }
-        
-        @keyframes pulse { from { transform: scale(0.85); } to { transform: scale(1.1); } }
-        .pop-anim { animation: pop 0.2s ease-out; }
-        @keyframes pop { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
+        .skin-layer { position: absolute; font-size: 10rem; z-index: 5; transition: transform 0.1s; }
+        .aura-layer { position: absolute; font-size: 15rem; opacity: 0.15; filter: blur(45px); animation: pulse 3s infinite alternate; }
+        @keyframes pulse { from { transform: scale(0.8); } to { transform: scale(1.1); } }
 
-        /* Buttons & Interaction */
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 12px; padding: 12px; margin-bottom: 10px; position: relative; z-index: 110; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 800; transition: 0.2s; position: relative; z-index: 120; }
-        .btn:hover { transform: scale(1.02); filter: brightness(1.1); }
-        .btn:active { transform: scale(0.98); }
-        
-        .shop-btn { background: #27ae60; color: #fff; margin-top: 5px; font-size: 0.75rem; }
-        .shop-btn:disabled { background: #333; opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-        
-        .tag { font-size: 0.65rem; letter-spacing: 3px; font-weight: bold; color: #555; margin-bottom: 10px; display: block; text-transform: uppercase; }
+        /* Interaction */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; transition: 0.2s; position: relative; z-index: 200; }
+        .btn:hover { transform: scale(1.02); filter: brightness(1.2); }
+        .shop-btn { background: #27ae60; color: #fff; font-size: 0.75rem; margin-top: 5px; }
+        .shop-btn:disabled { background: #333; opacity: 0.5; cursor: not-allowed; }
 
-        /* Gallery Overlay */
-        #gallery-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1500; display: none; padding: 40px; overflow-y: auto; backdrop-filter: blur(15px); }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); gap: 10px; }
-        .gallery-card { background: #111; border-radius: 10px; padding: 10px; text-align: center; border: 1px solid #222; }
-        .locked { opacity: 0.1; filter: grayscale(1); }
+        .tag { font-size: 0.65rem; letter-spacing: 2px; color: #555; text-transform: uppercase; margin-bottom: 5px; display: block; }
+        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div id="flash"></div>
 <canvas id="particle-canvas"></canvas>
 
-<div id="gallery-overlay">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="color:var(--rare)">BIOME ARCHIVE</h1>
-        <button class="btn" style="width:100px; background:#e74c3c; color:#fff" onclick="toggleGallery()">CLOSE</button>
-    </div>
-    <div id="gallery-content" class="gallery-grid"></div>
-</div>
-
 <div class="sidebar">
-    <span class="tag">Biometrics</span>
+    <span class="tag">Profile</span>
     <div class="stat-card">
-        <small style="color:#666">SAMPLES</small><br>
-        <b id="total-rolls" style="font-size:1.4rem">0</b>
+        LEVEL: <b id="lvl-num">1</b>
+        <div class="level-container"><div id="level-progress"></div></div>
     </div>
-    <div class="stat-card">
-        <small style="color:#666">LUCK</small><br>
-        <b id="luck-level" style="color:var(--uncommon)">1.0x</b>
-    </div>
+    <div class="stat-card">LUCK: <b id="luck-stat" style="color:var(--uncommon)">1.0x</b></div>
     <span class="tag">Inventory</span>
-    <div id="inv-display" style="font-size: 0.8rem;"></div>
-    
-    <div style="margin-top: auto;">
-        <button class="btn" style="background:#444; color:#fff; font-size: 0.7rem; margin-bottom:5px;" onclick="exportData()">💾 EXPORT SAVE</button>
-        <button class="btn" style="background:#a93226; color:#fff; font-size: 0.7rem;" onclick="resetData()">🗑️ RESET DATA</button>
-        <button class="btn" style="background:#222; color:#fff; margin-top:10px;" onclick="toggleGallery()">📖 OPEN ARCHIVE</button>
-    </div>
+    <div id="inv-list" style="font-size: 0.8rem;"></div>
 </div>
 
 <div class="main-game">
@@ -87,11 +58,11 @@
         <div id="aura-layer" class="aura-layer"></div>
         <div id="skin-layer" class="skin-layer">🥚</div>
     </div>
-    <div id="rarity-tag" class="tag" style="color:#fff; opacity:0.6;">Ready</div>
-    <div id="animal-name" style="font-size: 2.5rem; font-weight: 900; margin: 10px 0; text-align:center;">BIO-SCANNER</div>
+    <div id="biome-name" class="tag" style="color:var(--rare); font-size: 1rem;">FOREST BIOME</div>
+    <div id="animal-name" style="font-size: 2.8rem; font-weight: 900; margin: 10px 0;">READY</div>
     
-    <div style="width: 300px; position: relative; z-index: 1000;">
-        <button id="roll-btn" class="btn" style="background:#fff; color:#000; font-size:1.2rem" onclick="roll()">ROLL SEQUENCE</button>
+    <div style="width: 320px;">
+        <button class="btn" style="background:#fff; color:#000; font-size:1.3rem; letter-spacing: 1px;" onclick="roll()">GAMBLE TIME</button>
         <div style="display:flex; justify-content:center; gap:20px; margin-top:10px;">
             <label style="font-size: 0.7rem; color: #444; cursor:pointer;"><input type="checkbox" id="turbo"> TURBO</label>
         </div>
@@ -101,124 +72,70 @@
 <div class="shop-panel">
     <span class="tag">Empire Shop</span>
     <div class="stat-card">
-        <b style="color:var(--god)">⚡ Auto-Splicer</b>
-        <button class="btn shop-btn" onclick="buy('auto')" id="auto-btn">1 Mythic</button>
+        <b style="color:var(--rare)">Luck Potion</b>
+        <button class="btn shop-btn" onclick="buy('luck')">50 Common</button>
     </div>
     <div class="stat-card">
-        <b style="color:var(--legendary)">🌀 Mega Roll (x100)</b>
-        <button class="btn shop-btn" onclick="bulkRoll(100)" id="mega-btn">5 Legendary</button>
-    </div>
-    <div class="stat-card">
-        <b style="color:var(--rare)">🛠️ Forge Legend</b>
-        <button class="btn shop-btn" onclick="craft('Legendary')" id="forge-btn">50 Rare</button>
-    </div>
-    <div class="stat-card">
-        <b style="color:var(--uncommon)">🍀 Luck Serum</b>
-        <button class="btn shop-btn" onclick="buy('luck')" id="luck-btn">200 Uncommon</button>
+        <b style="color:var(--legendary)">Mega Roll (x50)</b>
+        <button class="btn shop-btn" onclick="bulkRoll()">1 Rare</button>
     </div>
 </div>
 
 <script>
-    const db = {
-        Common: [{id:"c1", n:"Cat", e:"🐈", a:"🐾"}, {id:"c2", n:"Rat", e:"🐀", a:"🧀"}, {id:"c3", n:"Ant", e:"🐜", a:"🍂"}, {id:"c4", n:"Snail", e:"🐌", a:"🌱"}, {id:"c5", n:"Crab", e:"🦀", a:"🏖️"}, {id:"c6", n:"Bat", e:"🦇", a:"🌑"}],
-        Uncommon: [{id:"u1", n:"Fox", e:"🦊", a:"✨"}, {id:"u2", n:"Deer", e:"🦌", a:"🌲"}, {id:"u3", n:"Owl", e:"🦉", a:"🌙"}, {id:"u4", n:"Sloth", e:"🦥", a:"🍃"}],
-        Rare: [{id:"r1", n:"DOGE", e:"🐕", a:"🦴"}, {id:"r2", n:"Shark", e:"🦈", a:"🌊"}, {id:"r3", n:"Rex", e:"🦖", a:"🌋"}, {id:"r4", n:"Lion", e:"🦁", a:"🌅"}],
-        Legendary: [{id:"l1", n:"Phoenix", e:"🐦‍🔥", a:"🔥"}, {id:"l2", n:"Dragon", e:"🐲", a:"⚡"}, {id:"l3", n:"Whale", e:"🐋", a:"🌌"}],
-        Mythic: [{id:"m1", n:"Glitch", e:"👾", a:"⬛"}, {id:"m2", n:"Reaper", e:"💀", a:"🌀"}],
-        God: [{id:"g1", n:"Supernova", e:"☀️", a:"💥"}, {id:"g2", n:"Eternity", e:"💎", a:"✨"}]
-    };
+    const biomes = [
+        { name: "FOREST", bg: "#051105", pool: [
+            {n:"Deer", e:"🦌", a:"🌲"}, {n:"Wolf", e:"🐺", a:"❄️"}, {n:"Owl", e:"🦉", a:"🌙"}, {n:"Fox", e:"🦊", a:"✨"}, {n:"Rabbit", e:"🐇", a:"🍀"}, {n:"Bear", e:"🐻", a:"🏔️"}
+        ]},
+        { name: "OCEAN", bg: "#050a15", pool: [
+            {n:"Shark", e:"🦈", a:"🌊"}, {n:"Whale", e:"🐋", a:"🌌"}, {n:"Dolphin", e:"🐬", a:"🫧"}, {n:"Octopus", e:"🐙", a:"⚓"}, {n:"Crab", e:"🦀", a:"🐚"}, {n:"Squid", e:"🦑", a:"🕳️"}
+        ]},
+        { name: "SPACE", bg: "#0a0511", pool: [
+            {n:"Alien", e:"👽", a:"🛸"}, {n:"Nebula", e:"🌌", a:"⚛️"}, {n:"Supernova", e:"☀️", a:"💥"}, {n:"Bot", e:"🤖", a:"🔋"}, {n:"Comet", e:"☄️", a:"✨"}, {n:"UFO", e:"🛸", a:"📡"}
+        ]}
+    ];
 
-    let s = { rolls: 0, luck: 1.0, auto: false, inv: {Common:0, Uncommon:0, Rare:0, Legendary:0, Mythic:0, God:0}, discovered: [], shinies: [] };
+    let s = { rolls: 0, exp: 0, lvl: 1, luck: 1.0, inv: {Common:0, Rare:0} };
 
-    // Particles
-    const canvas = document.getElementById('particle-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-
-    class Particle {
-        constructor(x, y, color) { this.x = x; this.y = y; this.color = color; this.size = Math.random() * 4 + 2; this.speedX = (Math.random() - 0.5) * 12; this.speedY = (Math.random() - 0.5) * 12; this.alpha = 1; }
-        update() { this.x += this.speedX; this.y += this.speedY; this.alpha -= 0.02; }
-        draw() { ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color; ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI*2); ctx.fill(); }
-    }
-
-    function createExplosion(color) { for(let i=0; i<20; i++) particles.push(new Particle(window.innerWidth/2, window.innerHeight/2, color)); }
-    function animate() { ctx.clearRect(0,0,canvas.width,canvas.height); particles = particles.filter(p => p.alpha > 0); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
-    animate();
-
-    function roll(forcedTier = null) {
+    function roll() {
         s.rolls++;
-        let t = "Common";
-        if (forcedTier) { t = forcedTier; } else {
-            const rng = Math.random() * 1000000;
-            if (rng < (2.5 * s.luck)) t = "God";
-            else if (rng < (150 * s.luck)) t = "Mythic";
-            else if (rng < (3000 * s.luck)) t = "Legendary";
-            else if (rng < (55000 * s.luck)) t = "Rare";
-            else if (rng < (280000 * s.luck)) t = "Uncommon";
-        }
+        s.exp += 20;
+        if(s.exp >= 100) { s.exp = 0; s.lvl++; checkBiome(); }
+
+        let t = Math.random() < 0.8 ? "Common" : "Rare";
         s.inv[t]++;
-        const pick = db[t][Math.floor(Math.random() * db[t].length)];
-        const isShiny = (Math.random() * 100) < 2;
-        if(!s.discovered.includes(pick.id)) s.discovered.push(pick.id);
-        if(isShiny && !s.shinies.includes(pick.id)) s.shinies.push(pick.id);
-        const color = getComputedStyle(document.documentElement).getPropertyValue(`--${t.toLowerCase()}`);
-        createExplosion(color);
-        updateVisuals(t, pick, isShiny, color);
-        updateUI(); save();
+        
+        const biome = biomes[Math.min(s.lvl - 1, biomes.length - 1)];
+        const pick = biome.pool[Math.floor(Math.random() * biome.pool.length)];
+
+        document.getElementById('skin-layer').innerText = pick.e;
+        document.getElementById('aura-layer').innerText = pick.a;
+        document.getElementById('animal-name').innerText = pick.n;
+        document.getElementById('animal-name').style.color = t === "Rare" ? "var(--rare)" : "var(--common)";
+        
+        updateUI();
     }
 
-    function updateVisuals(t, p, shiny, color) {
-        const skin = document.getElementById('skin-layer');
-        document.getElementById('aura-layer').innerText = p.a;
-        skin.innerText = p.e;
-        skin.classList.remove('pop-anim'); void skin.offsetWidth; skin.classList.add('pop-anim');
-        skin.style.filter = shiny ? "drop-shadow(0 0 30px var(--shiny)) brightness(1.3)" : "none";
-        document.getElementById('animal-name').innerText = (shiny ? "✨ " : "") + p.n;
-        document.getElementById('animal-name').style.color = color;
-        document.getElementById('rarity-tag').innerText = t;
-        document.getElementById('rarity-tag').style.color = color;
-        if(t === "God") { document.getElementById('flash').style.opacity = "1"; setTimeout(() => document.getElementById('flash').style.opacity = "0", 150); }
+    function checkBiome() {
+        const b = biomes[Math.min(s.lvl - 1, biomes.length - 1)];
+        document.body.style.background = b.bg;
+        document.getElementById('biome-name').innerText = b.name + " BIOME";
     }
 
     function updateUI() {
-        document.getElementById('total-rolls').innerText = s.rolls.toLocaleString();
-        document.getElementById('luck-level').innerText = s.luck.toFixed(1) + "x";
-        document.getElementById('inv-display').innerHTML = Object.keys(s.inv).map(k => `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="color:var(--${k.toLowerCase()})">${k}</span><span>${s.inv[k]}</span></div>`).join('');
-        document.getElementById('auto-btn').disabled = s.inv.Mythic < 1 || s.auto;
-        document.getElementById('mega-btn').disabled = s.inv.Legendary < 5;
-        document.getElementById('forge-btn').disabled = s.inv.Rare < 50;
-        document.getElementById('luck-btn').disabled = s.inv.Uncommon < 200;
+        document.getElementById('lvl-num').innerText = s.lvl;
+        document.getElementById('level-progress').style.width = s.exp + "%";
+        document.getElementById('luck-stat').innerText = s.luck.toFixed(1) + "x";
+        document.getElementById('inv-list').innerHTML = `Common: ${s.inv.Common}<br>Rare: ${s.inv.Rare}`;
     }
 
-    function buy(type) {
-        if(type==='auto' && s.inv.Mythic >= 1) { s.inv.Mythic--; s.auto = true; setInterval(roll, 2000); }
-        if(type==='luck' && s.inv.Uncommon >= 200) { s.inv.Uncommon -= 200; s.luck += 2.0; }
-        updateUI(); save();
-    }
-    function craft(t) { if(s.inv.Rare >= 50) { s.inv.Rare -= 50; roll(t); } }
-    function bulkRoll(n) { if(s.inv.Legendary >= 5) { s.inv.Legendary -= 5; for(let i=0; i<n; i++) roll(); } }
+    function buy(type) { if(s.inv.Common >= 50) { s.inv.Common -= 50; s.luck += 0.5; updateUI(); } }
+    function bulkRoll() { if(s.inv.Rare >= 1) { s.inv.Rare--; for(let i=0; i<50; i++) roll(); } }
 
-    function toggleGallery() {
-        const g = document.getElementById('gallery-overlay');
-        g.style.display = g.style.display === "block" ? "none" : "block";
-        if(g.style.display === "block") {
-            document.getElementById('gallery-content').innerHTML = Object.values(db).flat().map(a => `<div class="gallery-card ${s.discovered.includes(a.id)?'':'locked'}"><div style="font-size:1.8rem">${s.discovered.includes(a.id)?a.e:'?'}</div></div>`).join('');
-        }
-    }
-
-    function exportData() { prompt("Copy your save data:", JSON.stringify(s)); }
-    function resetData() { if(confirm("Erase all progress?")) { localStorage.clear(); location.reload(); } }
-
-    let tInterval;
-    document.getElementById('turbo').onchange = (e) => { if(e.target.checked) tInterval = setInterval(roll, 100); else clearInterval(tInterval); };
-
-    function save() { localStorage.setItem('bio_final_fix', JSON.stringify(s)); }
-    function load() {
-        const saved = localStorage.getItem('bio_final_fix');
-        if(saved) { s = JSON.parse(saved); updateUI(); if(s.auto) setInterval(roll, 2000); }
-    }
-    load();
+    let tInt;
+    document.getElementById('turbo').onchange = (e) => {
+        if(e.target.checked) tInt = setInterval(roll, 100);
+        else clearInterval(tInt);
+    };
 </script>
 </body>
 </html>
