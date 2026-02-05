@@ -1,57 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Bio-Roll: Infinite RNG</title>
     <style>
-        body { background: #1a1a1a; color: white; font-family: sans-serif; text-align: center; padding-top: 50px; }
-        #display { font-size: 3rem; margin: 20px; min-height: 80px; font-weight: bold; }
-        #rarity { font-size: 1.2rem; color: #888; }
-        button { padding: 15px 30px; font-size: 1.2rem; cursor: pointer; background: #444; color: white; border: none; border-radius: 8px; }
-        button:hover { background: #666; }
-        .Common { color: #ffffff; }
-        .Uncommon { color: #55ff55; text-shadow: 0 0 5px #22aa22; }
-        .Rare { color: #5555ff; text-shadow: 0 0 8px #2222aa; }
-        .Legendary { color: #ffff55; text-shadow: 0 0 15px #aaaa22; font-style: italic; }
-        .Mythic { color: #ff55ff; text-shadow: 0 0 20px #aa22aa; animation: shake 0.5s infinite; }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 10% { transform: translate(-1px, -2px); } 100% { transform: translate(1px, -2px); } }
+        body { background: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: #1e1e1e; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        #display { font-size: 2.5rem; margin: 20px 0; min-height: 70px; font-weight: 800; transition: all 0.2s; }
+        #rarity-label { font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: #888; }
+        
+        .stats-bar { display: flex; justify-content: space-around; background: #2a2a2a; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
+        
+        button { padding: 15px 25px; font-size: 1.1rem; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 5px; font-weight: bold; transition: 0.2s; margin: 5px; }
+        button:hover { background: #2980b9; transform: scale(1.05); }
+        button:active { transform: scale(0.95); }
+        .btn-craft { background: #27ae60; }
+        .btn-craft:hover { background: #219150; }
+        .btn-reset { background: #c0392b; font-size: 0.7rem; margin-top: 50px; opacity: 0.5; }
+
+        /* Rarity Colors */
+        .Common { color: #ecf0f1; }
+        .Uncommon { color: #2ecc71; text-shadow: 0 0 10px #2ecc71; }
+        .Rare { color: #3498db; text-shadow: 0 0 10px #3498db; }
+        .Legendary { color: #f1c40f; text-shadow: 0 0 15px #f1c40f; }
+        .Mythic { color: #9b59b6; animation: glow 1s ease-in-out infinite alternate; }
+
+        @keyframes glow { from { text-shadow: 0 0 10px #9b59b6; } to { text-shadow: 0 0 30px #e74c3c, 0 0 10px #9b59b6; } }
     </style>
 </head>
 <body>
-    <h1>🧬 BIO-ROLL RNG</h1>
-    <div id="rarity">Press Roll to Start</div>
-    <div id="display">---</div>
-    <button onclick="roll()">ROLL (1 in 1,000,000 Rare!)</button>
-    <p>Total Rolls: <span id="count">0</span></p>
 
-    <script>
-        let rolls = 0;
-        const animals = {
-            Common: ["Stray Cat", "Pigeon", "Rat", "Common Dog", "Goldfish"],
-            Uncommon: ["Axolotl", "Red Fox", "Emperor Penguin", "Electric Eel"],
-            Rare: ["Albino Lion", "Giant Squid", "Stardust Jellyfish"],
-            Legendary: ["Chronos Turtle", "Solar Serpent", "Void Wolf"],
-            Mythic: ["THE GLITCH WHALE", "GALAXY BUTTERFLY"]
-        };
+<div class="container">
+    <h1>🧬 BIO-ROLL</h1>
+    
+    <div class="stats-bar">
+        <div>Rolls: <span id="count">0</span></div>
+        <div>Luck: <span id="luck-stat">1.0</span>x</div>
+    </div>
 
-        function roll() {
-            rolls++;
-            document.getElementById('count').innerText = rolls;
-            let rng = Math.random() * 1000000;
-            let tier = "Common";
-            
-            if (rng < 1) tier = "Mythic";
-            else if (rng < 100) tier = "Legendary";
-            else if (rng < 2000) tier = "Rare";
-            else if (rng < 50000) tier = "Uncommon";
+    <div id="rarity-label">Ready to Roll</div>
+    <div id="display">Click Below</div>
+    
+    <button onclick="roll()">ROLL FOR ANIMALS</button>
+    
+    <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+        <h3>Alchemist Workshop</h3>
+        <p id="inv-stats">Commons: 0 | Uncommons: 0 | Rares: 0</p>
+        <button class="btn-craft" onclick="craftLuck()">Craft Rabbit Foot (-10 Commons for +0.1 Luck)</button>
+    </div>
 
-            const list = animals[tier];
-            const result = list[Math.floor(Math.random() * list.length)];
+    <button class="btn-reset" onclick="resetGame()">Hard Reset Game</button>
+</div>
 
-            const display = document.getElementById('display');
-            display.innerText = result;
-            display.className = tier;
-            document.getElementById('rarity').innerText = `Rarity: ${tier}`;
+<script>
+    // 1. Data Structure
+    const animals = {
+        Common: ["Stray Cat", "Pigeon", "Rat", "Common Dog", "Squirrel", "Garden Snail"],
+        Uncommon: ["Axolotl", "Red Fox", "Emperor Penguin", "Electric Eel", "Fruit Bat"],
+        Rare: ["Albino Lion", "Giant Squid", "Stardust Jellyfish", "Golden Eagle"],
+        Legendary: ["Chronos Turtle", "Solar Serpent", "Void Wolf", "Magma Rhino"],
+        Mythic: ["THE GLITCH WHALE", "GALAXY BUTTERFLY", "NEBULA PHOENIX"]
+    };
+
+    // 2. Initialize Game State
+    let gameState = {
+        rolls: 0,
+        luckMult: 1.0,
+        inventory: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0 }
+    };
+
+    // 3. Load from LocalStorage on Startup
+    function loadGame() {
+        const saved = localStorage.getItem('bioRollSave');
+        if (saved) {
+            gameState = JSON.parse(saved);
+            updateUI();
         }
-    </script>
+    }
+
+    function saveGame() {
+        localStorage.setItem('bioRollSave', JSON.stringify(gameState));
+    }
+
+    function updateUI() {
+        document.getElementById('count').innerText = gameState.rolls;
+        document.getElementById('luck-stat').innerText = gameState.luckMult.toFixed(1);
+        document.getElementById('inv-stats').innerText = 
+            `Commons: ${gameState.inventory.Common} | Uncommons: ${gameState.inventory.Uncommon} | Rares: ${gameState.inventory.Rare}`;
+    }
+
+    // 4. Core Mechanics
+    function roll() {
+        gameState.rolls++;
+        
+        let rng = Math.random() * 1000000;
+        let tier = "Common";
+        
+        // Luck logic: Multiplier makes the "requirement" easier to hit
+        if (rng < (1 * gameState.luckMult)) tier = "Mythic";
+        else if (rng < (100 * gameState.luckMult)) tier = "Legendary";
+        else if (rng < (2500 * gameState.luckMult)) tier = "Rare";
+        else if (rng < (75000 * gameState.luckMult)) tier = "Uncommon";
+
+        gameState.inventory[tier]++;
+        
+        const list = animals[tier];
+        const result = list[Math.floor(Math.random() * list.length)];
+        
+        const display = document.getElementById('display');
+        display.innerText = result;
+        display.className = tier;
+        document.getElementById('rarity-label').innerText = `Rarity: ${tier}`;
+        
+        updateUI();
+        saveGame();
+    }
+
+    function craftLuck() {
+        if (gameState.inventory.Common >= 10) {
+            gameState.inventory.Common -= 10;
+            gameState.luckMult += 0.1;
+            updateUI();
+            saveGame();
+            alert("✨ Crafted! Luck increased by 0.1x");
+        } else {
+            alert("You need at least 10 Common animals to craft luck!");
+        }
+    }
+
+    function resetGame() {
+        if (confirm("Are you sure? This deletes ALL your animals and luck!")) {
+            localStorage.removeItem('bioRollSave');
+            location.reload();
+        }
+    }
+
+    // Run on load
+    loadGame();
+</script>
 </body>
 </html>
