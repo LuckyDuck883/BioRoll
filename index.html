@@ -3,87 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DABESTGAME - WHALE_EDITION</title>
+    <title>DABESTGAME</title>
     <style>
         :root { 
-            --bg: #050505; --text: #0f0; --gold: #ffd700;
-            --zenith: #00ff88; --error: #ff0055;
+            --panel: rgba(10, 10, 10, 0.98);
+            --zenith: #00ff88; --gold: #ffd700;
         }
         
-        body { background: var(--bg); color: var(--text); font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Ad Popups */
-        .ad-popup { position: absolute; width: 200px; height: 150px; background: #fff; color: #000; border: 4px solid #f00; z-index: 5000; padding: 10px; box-shadow: 10px 10px 0 #000; cursor: move; }
-        .ad-close { position: absolute; top: 0; right: 0; background: #ccc; padding: 2px 5px; cursor: pointer; border: 1px solid #000; }
+        /* Sidebars */
+        .sidebar { width: 300px; background: var(--panel); border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        /* Panels */
-        .panel { width: 300px; background: #000; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
-        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        /* Leaderboard */
+        .leaderboard { background: rgba(255,255,255,0.05); border: 1px solid var(--gold); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 0.8rem; }
+        .l-row { display: flex; justify-content: space-between; padding: 2px 0; }
+        .gold-txt { color: var(--gold); font-weight: bold; }
 
-        /* P2W Button */
+        /* OG Stage */
+        #display-stage { font-size: 11rem; height: 300px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
+        
+        /* Buttons */
+        .gamble-btn { 
+            width: 100%; padding: 20px; border: none; border-radius: 15px; cursor: pointer; font-weight: 900; 
+            background: #fff; color: #000; font-size: 1.8rem; box-shadow: 0 6px 0 #999; transition: 0.1s;
+        }
+        .gamble-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #666; }
+
         .p2w-btn { 
-            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; 
-            padding: 15px; font-weight: 900; cursor: pointer; width: 100%; border-radius: 50px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); animation: pulse 1s infinite; margin-top: 10px;
+            background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; padding: 12px; 
+            border: none; border-radius: 10px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px;
         }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        /* The Stage */
-        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; }
-        
-        .admin-btn { background: #111; color: #0f0; border: 1px solid #333; padding: 8px; margin-bottom: 4px; cursor: pointer; font-size: 0.65rem; width: 100%; text-align: left; }
-        .admin-btn:hover { background: #222; }
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 10px; }
+        .tag { font-size: 0.65rem; letter-spacing: 2px; color: #666; text-transform: uppercase; }
 
-        .stat-card { background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; }
-        #melt-layer { position: fixed; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.8)); opacity: 0; z-index: 4000; transition: 2s; }
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
     </style>
 </head>
-<body id="b">
+<body>
 
-<div id="melt-layer"></div>
-<div id="ad-container"></div>
-
-<div class="panel">
-    <h2 style="color:var(--gold); margin:0;">WHALE STATUS</h2>
+<div class="sidebar">
+    <h1 style="color:var(--zenith); font-style: italic; margin:0;">DABESTGAME</h1>
     <div class="stat-card">
-        <div>RANK: <span id="lvl">1</span></div>
-        <div>STABILITY: <span id="stab">100%</span></div>
+        <span class="tag">Rank Progress</span>
+        <div style="font-size: 1.2rem; font-weight: 900;">LVL <span id="lvl">1</span></div>
     </div>
-    
-    <button class="p2w-btn" onclick="spawnAds()">BUY 1,000,000 GEMS</button>
-    <div id="inventory" style="overflow-y:auto; flex-grow:1; font-size: 0.7rem; margin-top: 10px;"></div>
+
+    <div class="leaderboard">
+        <div style="text-align: center; color: var(--gold); margin-bottom: 5px;">WORLD RANKINGS</div>
+        <div class="l-row gold-txt"><span>1. Admin's Cousin</span> <span>999,999,999</span></div>
+        <div class="l-row"><span>2. Dev_Brother</span> <span>850,000,000</span></div>
+        <div class="l-row" style="color: #0f0;"><span>9,999+. YOU</span> <span id="my-score">0</span></div>
+    </div>
+
+    <button class="p2w-btn" onclick="spawnAds()">PREPARE</button>
+    <div id="inv-list" style="margin-top: 20px; font-size: 0.8rem;"></div>
 </div>
 
-<div class="main">
-    <div class="stage-box" id="s">📦</div>
-    <div id="rtag" style="font-weight:900; color:#444; margin-top: 10px;">STANDBY</div>
-    <div id="name" style="margin-bottom:20px; font-size: 1.2rem;">SYSTEM_READY</div>
-
-    <div style="width: 250px;">
-        <button style="width:100%; padding:15px; font-weight:900; cursor:pointer;" onclick="roll()">ROLL ENTITY</button>
-        <div style="text-align:center; font-size:0.6rem; color:#333; margin-top:5px;">
-            <input type="checkbox" id="turbo"> HYPER_SPLICER
-        </div>
+<div class="main-game" id="main">
+    <div id="display-stage">📦</div>
+    <div id="rarity-tag" style="font-weight: 900; letter-spacing: 5px; margin-top: 10px; font-size: 1.2rem; color: #555;">READY</div>
+    <div id="display-name" style="font-size: 2.5rem; font-weight: 900; margin-bottom: 30px;">...</div>
+    
+    <div style="width: 300px;">
+        <button class="gamble-btn" onclick="roll()">Gamble Time</button>
+        <label style="display:block; text-align:center; margin-top:10px; color:#444; font-size:0.7rem;">
+            <input type="checkbox" id="turbo"> TURBO MODE
+        </label>
     </div>
 </div>
 
-<div class="panel">
-    <h3 style="color:#0f0; margin:0 0 10px 0;">ROOT_ACCESS</h3>
-    <button class="admin-btn" onclick="adminAbuse('lag')">/root: simulate_server_load</button>
-    <button class="admin-btn" onclick="adminAbuse('melt')">/root: overclock_cpu</button>
-    <button class="admin-btn" onclick="adminAbuse('zenith')">/root: force_zenith_leak</button>
-    <button class="admin-btn" onclick="adminAbuse('crash')">/root: emergency_shutdown</button>
-    
-    <div id="console" style="background:#050505; border:1px solid #222; height:150px; margin-top:10px; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
-        > awaiting pay-to-win transaction...
+<div class="sidebar" style="border-left: 1px solid #222;">
+    <span class="tag">Admin Console</span>
+    <div style="background:#000; border:1px solid #333; height:100px; padding:5px; font-family:monospace; font-size:0.6rem; color:#0f0; overflow:hidden;" id="console">
+        > system root active...
     </div>
+    <button style="background:#222; color:#fff; border:none; padding:5px; font-size:0.6rem; cursor:pointer; margin-top:5px;" onclick="adminTroll()">EXECUTE CMD</button>
+    
+    <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
+    <span class="tag">Global News</span>
+    <div id="news-ticker" style="font-size:0.7rem; color:#888;">Admin's Cousin just rolled a Zenith x50...</div>
 </div>
 
 <script>
-    const tiers = ["Common", "Rare", "Legendary", "Godly", "Void", "Zenith", "Dimension-Breaker"];
-    const icons = ["🐹", "🐺", "🐲", "🐦‍🔥", "👁️", "♾️", "🌌"];
-    let state = { lvl: 1, xp: 0, stab: 100, inv: {} };
-    tiers.forEach(t => state.inv[t] = 0);
+    const database = {
+        Common: { c: "#95a5a6", e: "🐹" },
+        Rare: { c: "#3498db", e: "🐺" },
+        Legendary: { c: "#f1c40f", e: "🦁" },
+        Godly: { c: "#ff3e3e", e: "🐦‍🔥" },
+        Zenith: { c: "#00ff88", e: "♾️" }
+    };
+
+    let s = { lvl: 1, xp: 0, zeniths: 0, inv: { Common: 0, Rare: 0, Legendary: 0, Godly: 0, Zenith: 0 } };
 
     function log(msg) {
         const con = document.getElementById('console');
@@ -91,62 +105,63 @@
     }
 
     function roll() {
-        state.xp += 20;
-        if(state.xp >= 100) { state.lvl++; state.xp = 0; }
+        // Tax Collector Logic (1% chance)
+        if (Math.random() < 0.01 && s.inv.Rare > 1) {
+            let tax = Math.floor(s.inv.Rare / 2);
+            s.inv.Rare -= tax;
+            document.getElementById('main').classList.add('shake');
+            setTimeout(() => document.getElementById('main').classList.remove('shake'), 500);
+            log(`TAX COLLECTOR: Seized ${tax} Rares for 'Maintenance'.`);
+            alert(`TAX COLLECTOR APPEARED! He took ${tax} Rares.`);
+            updateUI();
+            return;
+        }
+
+        s.xp += 20;
+        if(s.xp >= 100) { s.lvl++; s.xp = 0; }
+        
         let rng = Math.random() * 100;
-        let tIdx = rng < 1 ? 5 : rng < 10 ? 2 : 0;
-        state.inv[tiers[tIdx]]++;
-        document.getElementById('s').innerText = icons[tIdx];
-        document.getElementById('rtag').innerText = tiers[tIdx].toUpperCase();
+        let t = "Common";
+        if (rng < 1) { t = "Zenith"; s.zeniths++; }
+        else if (rng < 10) t = "Godly";
+        else if (rng < 30) t = "Rare";
+
+        s.inv[t]++;
+        updateDisplay(t);
         updateUI();
+    }
+
+    function updateDisplay(t) {
+        document.getElementById('display-stage').innerText = database[t].e;
+        document.getElementById('rarity-tag').innerText = t.toUpperCase();
+        document.getElementById('rarity-tag').style.color = database[t].c;
+        document.getElementById('display-name').innerText = "ENTITY_" + Math.floor(Math.random()*999);
     }
 
     function spawnAds() {
-        log("TRANSACTION INITIATED...");
-        for(let i=0; i<8; i++) {
-            setTimeout(() => {
-                const ad = document.createElement('div');
-                ad.className = 'ad-popup';
-                ad.style.left = Math.random() * 70 + '%';
-                ad.style.top = Math.random() * 60 + '%';
-                ad.innerHTML = `<div class="ad-close" onclick="this.parentElement.remove()">X</div>
-                                <b>DABESTGAME AD</b><br><br>
-                                WHY ROLL FOR FREE?<br>
-                                <button onclick="alert('Transaction Failed: Use more money.')" style="width:100%">GIVE MONEY NOW</button>`;
-                document.getElementById('ad-container').appendChild(ad);
-            }, i * 200);
+        log("PREPARING ASSETS...");
+        for(let i=0; i<3; i++) {
+            alert("ADMIN MESSAGE: You are currently Rank 9,999+. Please buy more GEMS to see Rank 9,998.");
         }
     }
 
-    function adminAbuse(type) {
-        state.stab -= 25;
-        log(`CRITICAL: Stability at ${state.stab}%`);
-        
-        if(type === 'lag') {
-            document.body.style.pointerEvents = 'none';
-            log("SIMULATING 50,000ms LAG...");
-            setTimeout(() => { document.body.style.pointerEvents = 'all'; log("LAG CLEARED."); }, 3000);
-        }
-        if(type === 'melt') {
-            document.getElementById('melt-layer').style.opacity = '1';
-            log("CORE TEMPERATURE: 5000°C");
-        }
-        if(type === 'zenith') {
-            alert("Zenith.exe has stopped working. Please reinstall your life.");
-        }
-        if(type === 'crash') {
-            document.body.innerHTML = "<h1 style='color:white; font-family:sans-serif; padding:50px;'>FATAL ERROR: User too powerful. System self-destructed.</h1>";
-        }
-        updateUI();
+    function adminTroll() {
+        const t = [
+            () => { document.body.style.transform = "rotate(5deg)"; log("UI_CALIBRATION_FAILED"); },
+            () => { s.inv.Common = 0; log("CLEANUP: Removed all 'trash' entities."); },
+            () => { alert("Admin's Cousin is laughing at your score."); }
+        ];
+        t[Math.floor(Math.random()*t.length)]();
     }
 
     function updateUI() {
-        document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('stab').innerText = state.stab + "%";
-        document.getElementById('inventory').innerHTML = tiers.slice().reverse().map(t => 
-            state.inv[t] > 0 ? `<div>${t}: ${state.inv[t]}</div>` : ""
-        ).join("");
-        if(state.stab <= 0) adminAbuse('crash');
+        document.getElementById('lvl').innerText = s.lvl;
+        document.getElementById('my-score').innerText = s.zeniths;
+        let html = "";
+        for(let k in s.inv) {
+            if(s.inv[k] > 0) html += `<div style="color:${database[k].c}">${k}: ${s.inv[k]}</div>`;
+        }
+        document.getElementById('inv-list').innerHTML = html;
     }
 
     setInterval(() => { if(document.getElementById('turbo').checked) roll(); }, 100);
