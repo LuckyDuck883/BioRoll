@@ -3,221 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Aura Skins</title>
+    <title>Bio-Roll: Gallery Edition</title>
     <style>
         :root { 
             --common: #95a5a6; --uncommon: #2ecc71; --rare: #3498db; 
             --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; 
-            --shiny: #ff69b4; --doge: #ffcc00; --panel-bg: rgba(15, 15, 15, 0.9);
+            --shiny: #ff69b4; --doge: #ffcc00; --panel: rgba(10, 10, 10, 0.95);
         }
         
         body { 
             background: #000; color: #fff; font-family: 'Inter', sans-serif; 
             margin: 0; display: flex; height: 100vh; overflow: hidden;
-            transition: background 0.5s;
         }
 
-        /* Flash Effect Overlay */
-        #flash {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #fff; opacity: 0; pointer-events: none; z-index: 999;
+        /* Flash & Overlays */
+        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 0.1s; }
+        
+        /* Gallery Overlay */
+        #gallery-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 500;
+            display: none; padding: 50px; overflow-y: auto; backdrop-filter: blur(10px);
         }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 15px; margin-top: 30px; }
+        .gallery-item { background: #111; aspect-ratio: 1; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; border: 1px solid #222; position: relative; }
+        .gallery-item.locked { opacity: 0.1; filter: grayscale(1); }
+        .gallery-item.shiny-unlocked { border: 2px solid var(--shiny); box-shadow: 0 0 10px var(--shiny); }
 
-        /* Sidebars */
-        .sidebar, .shop-panel { 
-            width: 280px; background: var(--panel-bg); 
-            backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
-            padding: 25px; display: flex; flex-direction: column; z-index: 10;
-        }
-
+        /* Panels */
+        .sidebar { width: 280px; background: var(--panel); border-right: 1px solid #222; padding: 25px; display: flex; flex-direction: column; }
         .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        /* Enhanced Visual Stage */
-        #display-stage {
-            position: relative; width: 400px; height: 400px;
-            display: flex; align-items: center; justify-content: center;
-        }
+        /* Visual Stage */
+        #display-stage { position: relative; width: 380px; height: 380px; display: flex; align-items: center; justify-content: center; }
+        .skin-layer { position: absolute; font-size: 11rem; z-index: 5; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .aura-layer { position: absolute; font-size: 15rem; opacity: 0.3; filter: blur(30px); animation: pulse 4s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.2; } 50% { transform: scale(1.1); opacity: 0.4; } }
 
-        .skin-layer {
-            position: absolute; font-size: 11rem; transition: 0.3s;
-            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
-        }
-
-        .aura-effect {
-            position: absolute; font-size: 14rem; opacity: 0.2;
-            filter: blur(20px); animation: spin 10s linear infinite;
-        }
-
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        /* Typography */
-        #animal-name { font-size: 3rem; font-weight: 900; margin-top: 20px; text-align: center; }
-        #rarity-tag { font-size: 0.9rem; letter-spacing: 8px; font-weight: 800; opacity: 0.4; }
-
-        /* Controls */
+        /* Buttons */
         .roll-btn { 
-            width: 320px; padding: 25px; font-size: 1.5rem; font-weight: 800; 
-            border: none; border-radius: 20px; cursor: pointer;
-            background: #fff; color: #000; box-shadow: 0 10px 40px rgba(255,255,255,0.1);
-            transition: 0.2s; margin-bottom: 20px;
+            width: 300px; padding: 20px; font-size: 1.5rem; font-weight: 800; border: none; border-radius: 15px;
+            background: #fff; color: #000; cursor: pointer; transition: 0.2s;
         }
-        .roll-btn:active { transform: scale(0.95); }
+        .roll-btn:hover { background: #eee; transform: translateY(-2px); }
+        .secondary-btn { background: #222; color: #fff; padding: 10px 20px; border-radius: 8px; border: 1px solid #333; cursor: pointer; margin-top: 10px; font-size: 0.8rem; }
 
-        /* Stats Cards */
-        .stat-card {
-            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px;
-            margin-bottom: 10px; border-left: 4px solid var(--common);
-        }
-
-        /* Skin Specific CSS */
-        .is-shiny { filter: drop-shadow(0 0 30px var(--shiny)) brightness(1.2) !important; }
-        .God-Text { color: var(--god); text-shadow: 0 0 20px var(--god); animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(2px); } 75% { transform: translateX(-2px); } }
+        /* Rarity Classes */
+        .is-shiny { filter: drop-shadow(0 0 25px var(--shiny)) brightness(1.2); }
+        .God-Text { color: var(--god); text-shadow: 0 0 20px var(--god); font-weight: 900; }
     </style>
 </head>
 <body>
 
 <div id="flash"></div>
 
+<div id="gallery-overlay">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h1>ANIMAL GALLERY</h1>
+        <button class="secondary-btn" onclick="toggleGallery()">CLOSE</button>
+    </div>
+    <div id="gallery-list" class="gallery-grid"></div>
+</div>
+
 <div class="sidebar">
-    <h2 style="letter-spacing: 2px; font-size: 1rem; color: #666;">BIOMETRICS</h2>
-    <div class="stat-card" style="border-left-color: var(--rare)">
-        <div style="font-size: 0.7rem; opacity: 0.5;">SAMPLES COLLECTED</div>
-        <div style="font-size: 1.5rem; font-weight: bold;" id="total-rolls">0</div>
+    <h2 style="font-size: 0.8rem; color: #555; letter-spacing: 2px;">LOGS</h2>
+    <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <small style="color:#666">TOTAL ROLLS</small>
+        <div id="total-rolls" style="font-size: 1.5rem; font-weight: bold;">0</div>
     </div>
-    <div class="stat-card" style="border-left-color: var(--uncommon)">
-        <div style="font-size: 0.7rem; opacity: 0.5;">LUCK COEFFICIENT</div>
-        <div style="font-size: 1.5rem; font-weight: bold;" id="luck-level">1.0x</div>
-    </div>
-    <div id="inv-list" style="margin-top: 20px; font-size: 0.8rem;"></div>
+    
+    <div id="inv-list" style="font-size: 0.8rem; flex-grow: 1;"></div>
+    
+    <button class="secondary-btn" onclick="toggleGallery()">📖 VIEW GALLERY</button>
 </div>
 
 <div class="main-game">
     <div id="display-stage">
-        <div class="aura-effect" id="aura-emoji"></div>
-        <div class="skin-layer" id="emoji-art">🥚</div>
+        <div id="aura-layer" class="aura-layer"></div>
+        <div id="skin-layer" class="skin-layer">🥚</div>
     </div>
-    <div id="rarity-tag">STABLE</div>
-    <div id="animal-name">BIO-SCANNER</div>
+    <div id="rarity-tag" style="font-size: 0.7rem; letter-spacing: 5px; margin-top: 20px; color: #444;">IDLE</div>
+    <div id="animal-name" style="font-size: 2.5rem; font-weight: 900; margin: 10px 0;">BIO-SCANNER</div>
     
-    <button class="roll-btn" onclick="roll()">INITIATE ROLL</button>
-    <label style="color: #444; font-size: 0.7rem; letter-spacing: 2px; cursor: pointer;">
+    <button class="roll-btn" onclick="roll()">ROLL</button>
+    <label style="margin-top: 15px; font-size: 0.7rem; color: #444; cursor: pointer;">
         <input type="checkbox" id="turbo"> TURBO MODE
     </label>
 </div>
 
-<div class="shop-panel">
-    <h2 style="color: var(--legendary); font-size: 1rem; letter-spacing: 2px;">UPGRADES</h2>
-    <div id="shop-items">
-        <div class="stat-card" style="border-left-color: var(--legendary); cursor: pointer;" onclick="buy('luck', 50, 'Common')">
-            <b>Luck Potion</b><br>
-            <small>+0.5 Luck (Cost: 50 Common)</small>
-        </div>
-        <div class="stat-card" style="border-left-color: var(--shiny); cursor: pointer;" onclick="buy('shiny', 15, 'Uncommon')">
-            <b>Shiny Charm</b><br>
-            <small>2x Shiny Odds (Cost: 15 Uncommon)</small>
-        </div>
-    </div>
-</div>
-
 <script>
-    // Animals with Skin Data (Aura + Base Emoji)
     const database = {
         Common: [
-            {n:"Neon Cat", e:"🐈", a:"🐾"}, {n:"Slime Snail", e:"🐌", a:"🧪"}, {n:"Iron Rat", e:"🐀", a:"⚙️"}
+            {id:"c1", n:"Garden Snail", e:"🐌", a:"🌱"}, {id:"c2", n:"Street Cat", e:"🐈", a:"🧶"},
+            {id:"c3", n:"Worker Bee", e:"🐝", a:"🌻"}, {id:"c4", n:"Small Fish", e:"🐟", a:"🫧"}
         ],
         Uncommon: [
-            {n:"Spirit Fox", e:"🦊", a:"✨"}, {n:"Moon Owl", e:"🦉", a:"🌙"}, {n:"Leaf Deer", e:"🦌", a:"🍃"}
+            {id:"u1", n:"Forest Fox", e:"🦊", a:"🍂"}, {id:"u2", n:"Tree Frog", e:"🐸", a:"💧"},
+            {id:"u3", n:"Blue Macaw", e:"🦜", a:"🌴"}, {id:"u4", n:"Wild Wolf", e:"🐺", a:"❄️"}
         ],
         Rare: [
-            {n:"SHINY DOGE", e:"🐕", a:"🦴"}, {n:"Magma Shark", e:"🦈", a:"🔥"}, {n:"Cyber Tiger", e:"🐯", a:"⚡"}
+            {id:"r1", n:"DOGE", e:"🐕", a:"🦴"}, {id:"r2", n:"Great White", e:"🦈", a:"🌊"},
+            {id:"r3", n:"King Cobra", e:"🐍", a:"🏜️"}, {id:"r4", n:"T-Rex", e:"🦖", a:"🌋"}
         ],
         Legendary: [
-            {n:"Astro Phoenix", e:"🐦‍🔥", a:"☄️"}, {n:"Void Dragon", e:"🐲", a:"🌀"}, {n:"Star Unicorn", e:"🦄", a:"🌌"}
+            {id:"l1", n:"Cyber Phoenix", e:"🐦‍🔥", a:"🔥"}, {id:"l2", n:"Hydra", e:"🐍", a:"🧪"},
+            {id:"l3", n:"Space Whale", e:"🐋", a:"🌌"}
         ],
         Mythic: [
-            {n:"DIMENSION RIP", e:"👾", a:"⬛"}, {n:"CHRONOS", e:"⌛", a:"🌀"}
+            {id:"m1", n:"Glitch Entity", e:"👾", a:"⬛"}, {id:"m2", n:"Void Reaper", e:"💀", a:"🌀"}
         ],
         God: [
-            {n:"SUPERNOVA", e:"☀️", a:"💥"}, {n:"DIVINITY", e:"💎", a:"✨"}, {n:"THE STORM", e:"⚡", a:"⛈️"}
+            {id:"g1", n:"SUPERNOVA", e:"☀️", a:"💥"}, {id:"g2", n:"CELESTIAL", e:"💎", a:"✨"}
         ]
     };
 
-    let s = { rolls: 0, luck: 1.0, sMod: 100, inv: {Common:0, Uncommon:0, Rare:0, Legendary:0, Mythic:0, God:0} };
-    let turboInterval = null;
+    let s = { rolls: 0, luck: 1.0, inv: {}, unlocked: [], shinyUnlocked: [] };
+    
+    // Initialize inv
+    Object.keys(database).forEach(k => s.inv[k] = 0);
 
     function roll() {
         s.rolls++;
         let rng = Math.random() * 1000000;
         let t = "Common";
-        
-        if (rng < (1.5 * s.luck)) t = "God";
-        else if (rng < (100 * s.luck)) t = "Mythic";
-        else if (rng < (2000 * s.luck)) t = "Legendary";
-        else if (rng < (40000 * s.luck)) t = "Rare";
-        else if (rng < (200000 * s.luck)) t = "Uncommon";
+        if (rng < (2 * s.luck)) t = "God";
+        else if (rng < (150 * s.luck)) t = "Mythic";
+        else if (rng < (2500 * s.luck)) t = "Legendary";
+        else if (rng < (45000 * s.luck)) t = "Rare";
+        else if (rng < (220000 * s.luck)) t = "Uncommon";
 
         s.inv[t]++;
         const pick = database[t][Math.floor(Math.random() * database[t].length)];
-        let isShiny = (Math.random() * s.sMod) < 1;
+        let isShiny = (Math.random() * 100) < 2;
 
-        // Visual Updates
-        const aura = document.getElementById('aura-emoji');
-        const art = document.getElementById('emoji-art');
+        if(!s.unlocked.includes(pick.id)) s.unlocked.push(pick.id);
+        if(isShiny && !s.shinyUnlocked.includes(pick.id)) s.shinyUnlocked.push(pick.id);
+
+        updateVisuals(t, pick, isShiny);
+        updateUI();
+        save();
+    }
+
+    function updateVisuals(t, p, shiny) {
+        const aura = document.getElementById('aura-layer');
+        const skin = document.getElementById('skin-layer');
         const name = document.getElementById('animal-name');
         const tag = document.getElementById('rarity-tag');
 
-        aura.innerText = pick.a;
-        art.innerText = pick.e;
-        art.className = "skin-layer " + (isShiny ? "is-shiny" : "");
+        aura.innerText = p.a;
+        skin.innerText = p.e;
+        skin.className = "skin-layer " + (shiny ? "is-shiny" : "");
         
-        name.innerText = (isShiny ? "✨ " : "") + pick.n;
+        name.innerText = (shiny ? "✨ " : "") + p.n;
         name.className = t === "God" ? "God-Text" : "";
         name.style.color = `var(--${t.toLowerCase()})`;
 
         tag.innerText = t.toUpperCase();
         tag.style.color = `var(--${t.toLowerCase()})`;
 
-        // God Tier Flash
         if (t === "God") {
-            const f = document.getElementById('flash');
-            f.style.opacity = "1";
-            setTimeout(() => f.style.opacity = "0", 100);
+            document.getElementById('flash').style.opacity = "1";
+            setTimeout(() => document.getElementById('flash').style.opacity = "0", 150);
         }
-
-        updateUI();
-        save();
     }
 
-    function buy(type, cost, curr) {
-        if(s.inv[curr] >= cost) {
-            s.inv[curr] -= cost;
-            if(type === 'luck') s.luck += 0.5;
-            if(type === 'shiny') s.sMod /= 2;
-            updateUI(); save();
-        }
+    function toggleGallery() {
+        const g = document.getElementById('gallery-overlay');
+        g.style.display = g.style.display === "block" ? "none" : "block";
+        if(g.style.display === "block") renderGallery();
+    }
+
+    function renderGallery() {
+        const list = document.getElementById('gallery-list');
+        list.innerHTML = "";
+        Object.values(database).flat().forEach(a => {
+            const found = s.unlocked.includes(a.id);
+            const shinyFound = s.shinyUnlocked.includes(a.id);
+            list.innerHTML += `
+                <div class="gallery-item ${found ? '' : 'locked'} ${shinyFound ? 'shiny-unlocked' : ''}">
+                    ${found ? a.e : '?'}
+                </div>`;
+        });
     }
 
     function updateUI() {
         document.getElementById('total-rolls').innerText = s.rolls.toLocaleString();
-        document.getElementById('luck-level').innerText = s.luck.toFixed(1) + "x";
-        
         let html = "";
-        for(let k in s.inv) html += `<div style="color:var(--${k.toLowerCase()}); margin-bottom:5px;">${k}: ${s.inv[k]}</div>`;
+        for(let k in s.inv) html += `<div style="color:var(--${k.toLowerCase()}); margin-bottom:4px;">${k}: ${s.inv[k]}</div>`;
         document.getElementById('inv-list').innerHTML = html;
     }
 
-    document.getElementById('turbo').addEventListener('change', (e) => {
-        if(e.target.checked) turboInterval = setInterval(roll, 100);
-        else clearInterval(turboInterval);
-    });
+    let tInt;
+    document.getElementById('turbo').onchange = (e) => {
+        if(e.target.checked) tInt = setInterval(roll, 100);
+        else clearInterval(tInt);
+    };
 
-    function save() { localStorage.setItem('bioRoll_Skins', JSON.stringify(s)); }
+    function save() { localStorage.setItem('bio_v10', JSON.stringify(s)); }
     function load() {
-        const saved = localStorage.getItem('bioRoll_Skins');
+        const saved = localStorage.getItem('bio_v10');
         if(saved) { s = JSON.parse(saved); updateUI(); }
     }
-
     load();
 </script>
 </body>
