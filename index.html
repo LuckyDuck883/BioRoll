@@ -3,63 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DABESTGAME - DUCK_EDITION</title>
+    <title>DABESTGAME - GOOSE_EDITION</title>
     <style>
         :root { 
             --bg: #050505; --text: #0f0; --gold: #ffd700;
-            --zenith: #00ff88; --ducky: #fff700;
+            --zenith: #00ff88; --ducky: #fff700; --goose: #ff00ff;
         }
         
         body { background: var(--bg); color: var(--text); font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        .panel { width: 300px; background: #000; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
+        .panel { width: 320px; background: #000; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
         .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        /* The Duck Glow */
-        .lucky-glow { filter: drop-shadow(0 0 25px var(--ducky)); animation: duckFloat 1.5s infinite ease-in-out; }
-        @keyframes duckFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-25px) scale(1.1); } }
-
-        /* Safe Vault Styling */
-        .vault-box { background: rgba(255, 247, 0, 0.05); border: 2px dashed var(--ducky); padding: 10px; margin-top: 15px; border-radius: 10px; text-align: center; }
-
-        /* P2W Prepare Button */
-        .p2w-btn { 
-            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; 
-            padding: 15px; font-weight: 900; cursor: pointer; width: 100%; border-radius: 50px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); margin-top: 10px;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-
-        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; position: relative; }
+        /* Evolution Effects */
+        .lucky-glow { filter: drop-shadow(0 0 20px var(--ducky)); animation: float 1.5s infinite ease-in-out; }
+        .goose-glow { filter: drop-shadow(0 0 30px var(--goose)); animation: pulse 0.5s infinite alternate; border: 2px solid var(--goose) !important; }
         
-        .leaderboard { background: #111; border: 1px solid var(--gold); padding: 10px; margin-top: 15px; font-size: 0.7rem; }
-        .leader-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes pulse { from { box-shadow: 0 0 10px var(--goose); } to { box-shadow: 0 0 40px var(--goose); } }
+
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; font-weight: 900; background: #fff; color: #000; margin-top: 10px; }
+        .evolve-btn { background: var(--goose); color: white; display: none; }
+
+        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; }
+        .stat-card { background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; font-size: 0.8rem; }
     </style>
 </head>
-<body id="b">
+<body>
 
 <div class="panel">
     <h2 style="color:var(--gold); margin:0;">WHALE STATUS</h2>
-    <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; font-size: 0.8rem;">
+    <div class="stat-card">
         <div>RANK: <span id="lvl">1</span></div>
-        <div>TOTAL LUCK: <span id="luck-total">1.0</span>x</div>
+        <div>LUCK: <span id="luck-total">1.0</span>x</div>
+        <div style="color:var(--goose)">GOOSE BUFF: <span id="goose-buff">0</span>x</div>
     </div>
     
-    <button class="p2w-btn" onclick="alert('Preparing... Error: Admin Cousin already bought the whole server.')">PREPARE</button>
-
-    <div class="vault-box">
-        <div style="color:var(--ducky); font-weight:bold; font-size:0.8rem;">🦆 DUCK SANCTUARY</div>
-        <div style="font-size:1.2rem;" id="duck-vault-count">0</div>
-        <div style="font-size:0.5rem; color:#666;">Each Duck adds +0.5 Luck!</div>
+    <div class="stat-card" style="border-color: var(--ducky)">
+        <div style="color:var(--ducky); font-weight:bold;">🦆 DUCKS: <span id="duck-count">0</span>/5</div>
+        <button id="evolve-btn" class="btn evolve-btn" onclick="megaEvolve()">MEGA EVOLVE GOOSE</button>
     </div>
 
-    <div class="leaderboard">
-        <div style="text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 5px;">TOP WHALES</div>
-        <div class="leader-row" style="color:var(--gold)"><span>1. Admin's Cousin</span> <span>999M</span></div>
-        <div class="leader-row" style="color: #0f0;"><span>9,999+. YOU</span> <span id="my-score">0</span></div>
-    </div>
-    
-    <div id="inventory" style="overflow-y:auto; flex-grow:1; font-size: 0.65rem; margin-top: 10px; border-top: 1px solid #333;"></div>
+    <div id="inventory" style="overflow-y:auto; flex-grow:1; font-size: 0.65rem; border-top: 1px solid #333; padding-top: 10px;"></div>
 </div>
 
 <div class="main">
@@ -68,27 +53,34 @@
     <div id="display-name" style="font-size: 1.5rem; color: #fff; margin-top: 5px;">...</div>
     
     <div style="width: 250px; margin-top: 20px;">
-        <button style="width:100%; padding:15px; font-weight:900; cursor:pointer;" onclick="roll()">ROLL ENTITY</button>
-        <div style="text-align:center; font-size:0.6rem; color:#333; margin-top:5px;">
+        <button class="btn" style="font-size: 1.2rem;" onclick="roll()">ROLL ENTITY</button>
+        <div style="text-align:center; font-size:0.6rem; color:#333; margin-top:10px;">
             <input type="checkbox" id="turbo"> HYPER_SPLICER
         </div>
     </div>
 </div>
 
 <div class="panel">
-    <h3 style="color:#0f0; margin:0 0 10px 0;">ROOT_ACCESS</h3>
-    <div id="console" style="background:#050505; border:1px solid #222; height:150px; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
-        > awaiting duck energy...
+    <h3 style="color:#0f0; margin:0 0 10px 0;">MUTATOR_LOG</h3>
+    <div id="console" style="background:#050505; border:1px solid #222; height:100%; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
+        > init variants...
     </div>
-    <div style="font-size:0.6rem; color:#444; margin-top:5px;">[SECURE] TAX_COLLECTOR: DELETED</div>
 </div>
 
 <script>
-    const tiers = ["Common", "Rare", "Legendary", "The Lucky Duck", "Zenith"];
-    const icons = ["🐹", "🐺", "🐲", "🦆", "♾️"];
-    const coolNames = ["Shadowstalker", "Neon Fang", "Titan-X", "Cyber-Beast", "Storm-Bringer", "Void-Walker", "Galactic Paw", "Omega-Claw", "Frost-Byte", "Magma-Grip"];
+    const tiers = ["Common", "Rare", "Legendary", "The Lucky Duck", "Zenith", "Supreme Goose"];
+    const icons = ["🐹", "🐺", "🐲", "🦆", "♾️", "🦢"];
     
-    let state = { lvl: 1, xp: 0, duckLuck: 0, zenithCount: 0, inv: {} };
+    // Variant Pool
+    const animals = {
+        Common: ["Rat", "Pigeon", "Ant", "Sloth", "Crab", "Bat"],
+        Rare: ["Wolf", "Shark", "Eagle", "Panther", "Cobra", "Ram"],
+        Legendary: ["Dragon", "Phoenix", "Hydra", "Griffin", "Chimera", "Behemoth"]
+    };
+    
+    const prefixes = ["Neon", "Void", "Cyber", "Shadow", "Glitch", "Primal", "Ancient", "Cosmic", "Bio", "Plasma"];
+    
+    let state = { lvl: 1, xp: 0, duckLuck: 0, gooseLuck: 0, inv: {} };
     tiers.forEach(t => state.inv[t] = 0);
 
     function log(msg) {
@@ -98,47 +90,59 @@
 
     function roll() {
         state.xp += 20;
-        if(state.xp >= 100) { state.lvl++; state.xp = 0; log(`LEVEL UP: Reach Rank ${state.lvl}`); }
+        if(state.xp >= 100) { state.lvl++; state.xp = 0; }
         
-        // Base luck 1.0 + 0.5 per Lucky Duck
-        let currentLuck = 1.0 + state.duckLuck;
-        let rng = (Math.random() * 5000) / currentLuck;
+        let totalLuck = 1.0 + state.duckLuck + state.gooseLuck;
+        let rng = (Math.random() * 8000) / totalLuck;
         let tIdx = 0;
         
-        if (rng < 1) {
-            tIdx = 3; // The Lucky Duck
-            state.duckLuck += 0.5;
-            log("LEGENDARY FIND: The Lucky Duck has entered the Sanctuary!");
-        } 
-        else if (rng < 50) tIdx = 4; // Zenith
-        else if (rng < 500) tIdx = 2; // Legendary
-        else if (rng < 1500) tIdx = 1; // Rare
+        if (rng < 1) { tIdx = 3; state.duckLuck += 0.5; log("VARIANT: Lucky Duck detected."); } 
+        else if (rng < 40) tIdx = 4;
+        else if (rng < 600) tIdx = 2;
+        else if (rng < 2000) tIdx = 1;
 
         let tier = tiers[tIdx];
         state.inv[tier]++;
         
+        // Display Setup
         const stage = document.getElementById('s');
         stage.innerText = icons[tIdx];
-        stage.className = (tier === "The Lucky Duck") ? "stage-box lucky-glow" : "stage-box";
+        stage.className = "stage-box " + (tier === "The Lucky Duck" ? "lucky-glow" : tier === "Supreme Goose" ? "goose-glow" : "");
+        
+        // Name Generation
+        let baseName = animals[tier] ? animals[tier][Math.floor(Math.random()*animals[tier].length)] : tier;
+        let pref = prefixes[Math.floor(Math.random()*prefixes.length)];
+        let finalName = (tIdx < 3) ? `${pref} ${baseName}` : (tIdx === 3) ? "QUACKMASTER-9000" : (tIdx === 5) ? "HONK_LORD_OMEGA" : "ZENITH_CORE";
         
         document.getElementById('rtag').innerText = tier.toUpperCase();
-        document.getElementById('rtag').style.color = (tier === "The Lucky Duck") ? "var(--ducky)" : "#444";
+        document.getElementById('rtag').style.color = (tIdx === 3) ? "var(--ducky)" : (tIdx === 5) ? "var(--goose)" : "#444";
+        document.getElementById('display-name').innerText = finalName;
         
-        const randomName = coolNames[Math.floor(Math.random() * coolNames.length)] + "-" + Math.floor(Math.random()*99);
-        document.getElementById('display-name').innerText = (tier === "The Lucky Duck") ? "QUACKMASTER-9000" : randomName;
-        
-        if(tIdx >= 3) state.zenithCount++;
         updateUI();
+    }
+
+    function megaEvolve() {
+        if(state.inv["The Lucky Duck"] >= 5) {
+            state.inv["The Lucky Duck"] -= 5;
+            state.inv["Supreme Goose"]++;
+            state.gooseLuck += 5.0;
+            state.duckLuck -= 2.5; // Removing the luck the 5 ducks gave
+            log("EVOLUTION COMPLETE: Supreme Golden Goose has ascended!");
+            updateUI();
+        }
     }
 
     function updateUI() {
         document.getElementById('lvl').innerText = state.lvl;
-        document.getElementById('my-score').innerText = state.zenithCount;
-        document.getElementById('duck-vault-count').innerText = state.inv["The Lucky Duck"];
-        document.getElementById('luck-total').innerText = (1.0 + state.duckLuck).toFixed(1);
+        document.getElementById('duck-count').innerText = state.inv["The Lucky Duck"];
+        document.getElementById('luck-total').innerText = (1.0 + state.duckLuck + state.gooseLuck).toFixed(1);
+        document.getElementById('goose-buff').innerText = state.gooseLuck;
         
+        // Show evolve button if 5 ducks
+        document.getElementById('evolve-btn').style.display = (state.inv["The Lucky Duck"] >= 5) ? 'block' : 'none';
+
         document.getElementById('inventory').innerHTML = tiers.slice().reverse().map(t => 
-            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #111;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
+            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
         ).join("");
     }
 
