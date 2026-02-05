@@ -5,157 +5,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bio-Roll: Infinite RNG</title>
     <style>
-        body { background: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 700px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); }
+        :root { --common: #ecf0f1; --uncommon: #2ecc71; --rare: #3498db; --legendary: #f1c40f; --mythic: #9b59b6; }
+        body { background: #0f0f0f; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 10px; }
+        .container { max-width: 600px; margin: auto; background: #1a1a1a; padding: 20px; border-radius: 25px; border: 2px solid #333; }
         
-        #display { font-size: 2.8rem; margin: 20px 0; min-height: 80px; font-weight: 800; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        #rarity-label { font-size: 1rem; text-transform: uppercase; letter-spacing: 3px; color: #888; margin-bottom: 5px; }
-        
-        .stats-bar { display: flex; justify-content: space-around; background: #2a2a2a; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; }
-        
-        button { padding: 18px 30px; font-size: 1.2rem; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 10px; font-weight: bold; transition: 0.2s; box-shadow: 0 4px 0 #2980b9; }
-        button:hover { background: #2980b9; transform: translateY(-2px); }
-        button:active { transform: translateY(2px); box-shadow: none; }
-        
-        .workshop { margin-top: 30px; background: #181818; padding: 20px; border-radius: 15px; border: 1px dashed #444; }
-        .log-container { margin-top: 30px; text-align: left; background: #151515; padding: 15px; border-radius: 10px; height: 150px; overflow-y: auto; border-left: 4px solid #3498db; }
-        .log-entry { font-size: 0.9rem; padding: 4px 0; border-bottom: 1px solid #222; }
+        /* Art Box */
+        #art-display { font-size: 8rem; line-height: 1; margin: 10px 0; min-height: 140px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #name-display { font-size: 2.2rem; font-weight: 800; margin-bottom: 5px; }
+        #rarity-label { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 4px; color: #666; }
 
-        /* Rarity Styles */
-        .Common { color: #ecf0f1; }
-        .Uncommon { color: #2ecc71; text-shadow: 0 0 8px #2ecc71; }
-        .Rare { color: #3498db; text-shadow: 0 0 10px #3498db; }
-        .Legendary { color: #f1c40f; text-shadow: 0 0 15px #f1c40f; font-style: italic; }
-        .Mythic { color: #9b59b6; animation: glitch 0.3s infinite; font-weight: 900; }
+        .stats-bar { display: flex; justify-content: space-around; background: #222; padding: 12px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        
+        button { width: 100%; padding: 20px; font-size: 1.4rem; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 15px; font-weight: bold; margin: 10px 0; box-shadow: 0 6px 0 #2980b9; }
+        button:active { transform: translateY(4px); box-shadow: 0 2px 0 #2980b9; }
+        
+        .workshop { background: #151515; padding: 15px; border-radius: 15px; margin-top: 20px; }
+        .log-container { margin-top: 20px; text-align: left; background: #0a0a0a; padding: 15px; border-radius: 10px; height: 120px; overflow-y: auto; font-size: 0.8rem; }
 
-        @keyframes glitch { 
-            0% { transform: translate(0); text-shadow: 2px 2px #ff0000; }
-            50% { transform: translate(-2px, 2px); text-shadow: -2px -2px #00ff00; }
-            100% { transform: translate(2px, -2px); text-shadow: 1px 1px #0000ff; }
-        }
+        /* Rarity Animations */
+        .Common { color: var(--common); }
+        .Uncommon { color: var(--uncommon); text-shadow: 0 0 10px var(--uncommon); }
+        .Rare { color: var(--rare); text-shadow: 0 0 15px var(--rare); }
+        .Legendary { color: var(--legendary); text-shadow: 0 0 20px var(--legendary); animation: pulse 1.5s infinite; }
+        .Mythic { color: var(--mythic); animation: glitch 0.2s infinite; font-weight: 900; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes glitch { 0% { transform: translate(2px, 1px) rotate(0deg); } 50% { transform: translate(-1px, -2px) rotate(-1deg); } 100% { transform: translate(1px, 2px) rotate(1deg); } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🧬 BIO-ROLL</h1>
-    
     <div class="stats-bar">
-        <div><b>Rolls:</b> <span id="count">0</span></div>
-        <div><b>Luck:</b> <span id="luck-stat">1.0</span>x</div>
+        <div>🎰 <span id="count">0</span></div>
+        <div>🍀 <span id="luck-stat">1.0</span>x</div>
     </div>
 
-    <div id="rarity-label">Press Roll to Begin</div>
-    <div id="display">???</div>
+    <div id="rarity-label">Start Rolling</div>
+    <div id="art-display">🥚</div>
+    <div id="name-display">???</div>
     
-    <button onclick="roll()">ROLL (Click!)</button>
+    <button onclick="roll()">ROLL 🐾</button>
     
     <div class="workshop">
-        <h3>🧪 Alchemist Workshop</h3>
-        <p id="inv-stats">C: 0 | U: 0 | R: 0 | L: 0 | M: 0</p>
-        <button style="background:#27ae60; box-shadow: 0 4px 0 #1e8449;" onclick="craftLuck()">Craft Rabbit Foot (-10 Commons for +0.1 Luck)</button>
+        <p id="inv-stats" style="font-size: 0.8rem; color: #888;">C: 0 | U: 0 | R: 0 | L: 0 | M: 0</p>
+        <button style="background:#27ae60; box-shadow: 0 6px 0 #1e8449; padding: 10px; font-size: 1rem;" onclick="craftLuck()">Craft Charm (-10 Commons for +0.1 Luck)</button>
     </div>
 
     <div class="log-container">
-        <h4 style="margin-top:0; color:#3498db;">🏆 Rare Finds Log</h4>
         <div id="log-list"></div>
     </div>
-
-    <button style="background:none; box-shadow:none; color:#555; font-size:0.7rem; margin-top:40px;" onclick="resetGame()">Hard Reset Data</button>
 </div>
 
 <script>
-    const animals = {
-        Common: ["Stray Cat", "Pigeon", "Rat", "Common Dog", "Squirrel", "Garden Snail", "Goldfish", "Ant"],
-        Uncommon: ["Axolotl", "Red Fox", "Emperor Penguin", "Electric Eel", "Fruit Bat", "Hedgehog"],
-        Rare: ["Albino Lion", "Giant Squid", "Stardust Jellyfish", "Golden Eagle", "Velvet Spider"],
-        Legendary: ["Chronos Turtle", "Solar Serpent", "Void Wolf", "Magma Rhino", "Crystal Deer"],
-        Mythic: ["THE GLITCH WHALE", "GALAXY BUTTERFLY", "NEBULA PHOENIX", "OMEGA CHIMERA"]
+    const database = {
+        Common: [
+            {n: "Stray Cat", a: "🐈"}, {n: "Pigeon", a: "🐦"}, {n: "Rat", a: "🐀"}, {n: "Dog", a: "🐕"},
+            {n: "Snail", a: "🐌"}, {n: "Ant", a: "🐜"}, {n: "Bug", a: "🐛"}, {n: "Fly", a: "🪰"},
+            {n: "Mouse", a: "🖱️"}, {n: "Chick", a: "🐤"}, {n: "Fish", a: "🐟"}
+        ],
+        Uncommon: [
+            {n: "Fox", a: "🦊"}, {n: "Penguin", a: "🐧"}, {n: "Axolotl", a: "🦎"}, {n: "Bat", a: "🦇"},
+            {n: "Hedgehog", a: "🦔"}, {n: "Owl", a: "🦉"}, {n: "Snake", a: "🐍"}, {n: "Turtle", a: "🐢"},
+            {n: "Sloth", a: "🦥"}, {n: "Koala", a: "🐨"}, {n: "Parrot", a: "🦜"}
+        ],
+        Rare: [
+            {n: "Lion", a: "🦁"}, {n: "Squid", a: "🦑"}, {n: "Eagle", a: "🦅"}, {n: "Shark", a: "🦈"},
+            {n: "Wolf", a: "🐺"}, {n: "Whale", a: "🐋"}, {n: "Unicorn", a: "🦄"}, {n: "Tiger", a: "🐯"},
+            {n: "Gorilla", a: "🦍"}, {n: "Crocodile", a: "🐊"}
+        ],
+        Legendary: [
+            {n: "Solar Serpent", a: "🐉"}, {n: "Void Wolf", a: "🐺✨"}, {n: "Magma Rhino", a: "🦏🔥"}, 
+            {n: "Ice Phoenix", a: "🦅❄️"}, {n: "Jade Dragon", a: "🐲"}, {n: "Golden Stag", a: "🦌👑"}
+        ],
+        Mythic: [
+            {n: "THE GLITCH", a: "👾"}, {n: "GALAXY BUTTERFLY", a: "🦋🌌"}, 
+            {n: "NEBULA PHOENIX", a: "🔥🌌"}, {n: "COSMIC WHALE", a: "🐋🌠"}
+        ]
     };
 
-    let gameState = {
-        rolls: 0,
-        luckMult: 1.0,
-        inventory: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0 },
-        history: [] // Stores the last 10 rare finds
-    };
+    let state = { rolls: 0, luck: 1.0, inv: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0 }, history: [] };
 
-    function loadGame() {
-        const saved = localStorage.getItem('bioRollSave_v2');
-        if (saved) {
-            gameState = JSON.parse(saved);
-            updateUI();
-            renderLog();
-        }
+    function load() {
+        const s = localStorage.getItem('bioRoll_v3');
+        if (s) { state = JSON.parse(s); updateUI(); }
     }
 
-    function saveGame() {
-        localStorage.setItem('bioRollSave_v2', JSON.stringify(gameState));
-    }
+    function save() { localStorage.setItem('bioRoll_v3', JSON.stringify(state)); }
 
     function updateUI() {
-        document.getElementById('count').innerText = gameState.rolls;
-        document.getElementById('luck-stat').innerText = gameState.luckMult.toFixed(1);
-        document.getElementById('inv-stats').innerText = 
-            `C: ${gameState.inventory.Common} | U: ${gameState.inventory.Uncommon} | R: ${gameState.inventory.Rare} | L: ${gameState.inventory.Legendary} | M: ${gameState.inventory.Mythic}`;
-    }
-
-    function renderLog() {
-        const logList = document.getElementById('log-list');
-        logList.innerHTML = gameState.history.map(entry => 
-            `<div class="log-entry"><span class="${entry.tier}">[${entry.tier}]</span> ${entry.name} (#${entry.rollNum})</div>`
-        ).join('');
+        document.getElementById('count').innerText = state.rolls;
+        document.getElementById('luck-stat').innerText = state.luck.toFixed(1);
+        document.getElementById('inv-stats').innerText = `C: ${state.inv.Common} | U: ${state.inv.Uncommon} | R: ${state.inv.Rare} | L: ${state.inv.Legendary} | M: ${state.inv.Mythic}`;
+        const log = document.getElementById('log-list');
+        log.innerHTML = state.history.map(e => `<div>[${e.t}] ${e.n}</div>`).join('');
     }
 
     function roll() {
-        gameState.rolls++;
+        state.rolls++;
         let rng = Math.random() * 1000000;
-        let tier = "Common";
-        
-        if (rng < (1 * gameState.luckMult)) tier = "Mythic";
-        else if (rng < (100 * gameState.luckMult)) tier = "Legendary";
-        else if (rng < (2500 * gameState.luckMult)) tier = "Rare";
-        else if (rng < (75000 * gameState.luckMult)) tier = "Uncommon";
+        let t = "Common";
+        if (rng < (1 * state.luck)) t = "Mythic";
+        else if (rng < (150 * state.luck)) t = "Legendary";
+        else if (rng < (3000 * state.luck)) t = "Rare";
+        else if (rng < (80000 * state.luck)) t = "Uncommon";
 
-        gameState.inventory[tier]++;
-        const list = animals[tier];
-        const resultName = list[Math.floor(Math.random() * list.length)];
+        state.inv[t]++;
+        const pool = database[t];
+        const pick = pool[Math.floor(Math.random() * pool.length)];
 
-        // Log if it's Rare or better
-        if (tier !== "Common" && tier !== "Uncommon") {
-            gameState.history.unshift({ name: resultName, tier: tier, rollNum: gameState.rolls });
-            if (gameState.history.length > 10) gameState.history.pop();
-            renderLog();
+        if (t !== "Common") {
+            state.history.unshift({ n: pick.n, t: t });
+            if (state.history.length > 8) state.history.pop();
         }
 
-        const display = document.getElementById('display');
-        display.innerText = resultName;
-        display.className = tier;
-        document.getElementById('rarity-label').innerText = `Rarity: ${tier}`;
-        
-        updateUI();
-        saveGame();
+        const art = document.getElementById('art-display');
+        const name = document.getElementById('name-display');
+        art.innerText = pick.a;
+        name.innerText = pick.n;
+        art.className = name.className = t;
+        document.getElementById('rarity-label').innerText = t;
+
+        updateUI(); save();
     }
 
     function craftLuck() {
-        if (gameState.inventory.Common >= 10) {
-            gameState.inventory.Common -= 10;
-            gameState.luckMult += 0.1;
-            updateUI();
-            saveGame();
-        } else {
-            alert("Need 10 Commons!");
+        if (state.inv.Common >= 10) {
+            state.inv.Common -= 10;
+            state.luck += 0.1;
+            updateUI(); save();
         }
     }
 
-    function resetGame() {
-        if (confirm("Delete everything?")) {
-            localStorage.removeItem('bioRollSave_v2');
-            location.reload();
-        }
-    }
-
-    loadGame();
+    load();
 </script>
 </body>
 </html>
