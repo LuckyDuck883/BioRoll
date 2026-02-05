@@ -3,53 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DABESTGAME - GALLERY EDITION</title>
+    <title>DABESTGAME - ABILITIES & SAVES</title>
     <style>
         :root { 
             --bg: #020202; --text: #0f0; --gold: #ffd700;
-            --rarity1: #95a5a6; --rarity5: #3498db; --rarity10: #f1c40f;
+            --rarity1: #95a5a6; --rarity10: #f1c40f;
             --ducky: #fff700; --zenith: #00ff88; --error: #ff0055;
         }
         
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* Panels */
-        .panel { width: 300px; background: #000; border: 1px solid #1a1a1a; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
+        .panel { width: 320px; background: #000; border: 1px solid #1a1a1a; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
         .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        /* The Stage & Skin */
-        .stage-box { width: 320px; height: 320px; border: 2px solid #222; display: flex; align-items: center; justify-content: center; font-size: 9rem; position: relative; border-radius: 20px; transition: 0.3s; }
-        .aura { position: absolute; inset: -30px; border-radius: 50%; opacity: 0.2; filter: blur(50px); z-index: -1; }
+        /* The Stage & Aura */
+        .stage-box { width: 300px; height: 300px; border: 2px solid #222; display: flex; align-items: center; justify-content: center; font-size: 8rem; position: relative; border-radius: 50px; background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 80%); }
+        .aura { position: absolute; inset: -20px; border-radius: 50%; opacity: 0.25; filter: blur(40px); z-index: -1; animation: pulse 2s infinite ease-in-out; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.2; } 50% { transform: scale(1.1); opacity: 0.35; } 100% { transform: scale(1); opacity: 0.2; } }
 
-        /* Gallery System */
-        .gallery { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding-top: 10px; border-top: 1px solid #222; }
-        .gallery-item { width: 100%; aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; border-radius: 5px; filter: grayscale(1); opacity: 0.3; }
-        .unlocked { filter: grayscale(0); opacity: 1; border: 1px solid #333; }
+        /* Gallery */
+        .gallery { flex-grow: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding-top: 10px; border-top: 1px solid #222; }
+        .gallery-item { aspect-ratio: 1; background: #111; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border-radius: 8px; filter: grayscale(1); opacity: 0.2; position: relative; }
+        .unlocked { filter: grayscale(0); opacity: 1; border: 1px solid #444; }
+        .ability-tag { position: absolute; bottom: 0; width: 100%; font-size: 0.4rem; text-align: center; background: rgba(0,0,0,0.8); color: var(--gold); }
 
-        /* Buttons */
-        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; font-weight: 900; background: #fff; color: #000; margin-top: 10px; border-radius: 5px; }
-        .btn:hover { background: #eee; }
+        .btn { width: 100%; padding: 12px; border: none; cursor: pointer; font-weight: 900; background: #fff; color: #000; margin-top: 10px; border-radius: 8px; transition: 0.2s; }
+        .btn:hover { transform: scale(1.02); }
+        .save-btn { background: #0f0; color: #000; font-size: 0.7rem; padding: 5px; margin-top: 5px; }
         
         .stat-line { font-size: 0.8rem; display: flex; justify-content: space-between; margin-bottom: 5px; }
-        #log { font-size: 0.6rem; color: #555; height: 100px; overflow: hidden; }
+        #log { font-size: 0.6rem; color: #555; height: 80px; overflow-y: auto; border-top: 1px solid #111; padding-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="panel">
-    <h2 style="color:var(--gold); margin:0;">WHALE_RANK</h2>
-    <div style="margin: 15px 0;">
+    <h2 style="color:var(--gold); margin:0;">WHALE_OS</h2>
+    <div style="margin: 10px 0;">
         <div class="stat-line"><span>LEVEL:</span> <span id="lvl">1</span></div>
         <div class="stat-line"><span>LUCK:</span> <span id="luck">1.0</span>x</div>
-        <div class="stat-line"><span>COLLECTED:</span> <span id="col-count">0</span>/24</div>
+        <div class="stat-line"><span>XP:</span> <span id="xp-val">0</span>/100</div>
     </div>
     
     <button class="btn" onclick="roll()">ROLL ENTITY</button>
-    <label style="font-size: 0.7rem; display: block; text-align: center; margin-top: 5px;">
+    <label style="font-size: 0.7rem; display: block; text-align: center; margin-top: 10px;">
         <input type="checkbox" id="turbo"> HYPER_SPLICER
     </label>
 
-    <div id="log" style="margin-top: 20px;">> init systems...</div>
+    <button class="btn save-btn" onclick="saveGame()">FORCE MANUAL SAVE</button>
+    <button class="btn save-btn" style="background:#f44;" onclick="resetGame()">WIPE DATA</button>
+
+    <div id="log"></div>
 </div>
 
 <div class="main">
@@ -57,52 +62,54 @@
         <div id="aura" class="aura"></div>
         <span id="skin">📦</span>
     </div>
-    <div id="rtag" style="font-weight:900; color:#444; margin-top: 15px; letter-spacing: 5px;">AWAITING_GENOME</div>
-    <div id="display-name" style="font-size: 2rem; font-weight: 900; margin-top: 5px;">???</div>
+    <div id="rtag" style="font-weight:900; color:#444; margin-top: 15px; letter-spacing: 5px;">GENOME_EMPTY</div>
+    <div id="display-name" style="font-size: 2rem; font-weight: 900; margin-top: 5px; text-shadow: 0 0 15px rgba(255,255,255,0.1);">???</div>
+    <div id="ability-desc" style="font-size: 0.7rem; color: var(--gold); margin-top: 5px; height: 15px;"></div>
 </div>
 
 <div class="panel">
-    <h3 style="margin:0;">ANIMAL_GALLERY</h3>
-    <div class="gallery" id="gallery">
-        </div>
-    <div style="font-size: 0.6rem; color: #444; margin-top: 10px;">TIP: Lucky Ducks boost all future rarity odds.</div>
+    <h3 style="margin:0; font-size: 1rem;">COLLECTION_MANIFEST</h3>
+    <div class="gallery" id="gallery"></div>
+    <div id="active-abilities" style="font-size: 0.6rem; color: #0f0; margin-top: 10px;">Active: Base Systems</div>
 </div>
 
 <script>
     const database = [
-        { r: "Common", s: "🐀", c: "#95a5a6", n: "Street Rat" },
-        { r: "Common", s: "🐜", c: "#95a5a6", n: "Worker Ant" },
-        { r: "Uncommon", s: "🐕", c: "#2ecc71", n: "Stray Mutt" },
-        { r: "Uncommon", s: "🐈", c: "#2ecc71", n: "Alley Cat" },
-        { r: "Rare", s: "🐺", c: "#3498db", n: "Tundra Wolf" },
-        { r: "Rare", s: "🐍", c: "#3498db", n: "Neon Cobra" },
-        { r: "Epic", s: "🐆", c: "#9b59b6", n: "Void Panther" },
-        { r: "Epic", s: "🦅", c: "#9b59b6", n: "Storm Eagle" },
-        { r: "Legendary", s: "🐲", c: "#f1c40f", n: "Jade Dragon" },
-        { r: "Legendary", s: "🦁", c: "#f1c40f", n: "Solar Lion" },
-        { r: "Mythic", s: "🦄", c: "#e67e22", n: "Cosmic Pony" },
-        { r: "Mythic", s: "🐙", c: "#e67e22", n: "Kraken Spawn" },
-        { r: "Divine", s: "👼", c: "#ecf0f1", n: "Seraphim Bird" },
-        { r: "Demonic", s: "👹", c: "#c0392b", n: "Hell Hound" },
-        { r: "The Lucky Duck", s: "🦆", c: "#fff700", n: "QUACKMASTER" },
-        { r: "Zenith", s: "♾️", c: "#00ff88", n: "Zenith Core" },
-        { r: "Abyssal", s: "🌑", c: "#2c3e50", n: "Dark Matter" },
-        { r: "Nuclear", s: "☢️", c: "#dfff00", n: "Atomic Beast" },
-        { r: "Glitch", s: "👾", c: "#ff00ff", n: "System.Error" },
-        { r: "Omni-God", s: "👁️", c: "#ffffff", n: "The Watcher" }
+        { r: "Common", s: "🐀", c: "#95a5a6", n: "Street Rat", ab: "None" },
+        { r: "Common", s: "🐜", c: "#95a5a6", n: "Worker Ant", ab: "Small XP" },
+        { r: "Rare", s: "🐺", c: "#3498db", n: "Tundra Wolf", ab: "+0.1 Luck" },
+        { r: "Rare", s: "🐍", c: "#3498db", n: "Neon Cobra", ab: "Sleek" },
+        { r: "Epic", s: "🦅", c: "#9b59b6", n: "Storm Eagle", ab: "Speed+" },
+        { r: "Legendary", s: "🐲", c: "#f1c40f", n: "Jade Dragon", ab: "+1.0 Luck" },
+        { r: "The Lucky Duck", s: "🦆", c: "#fff700", n: "QUACKMASTER", ab: "Duck Buff" },
+        { r: "Zenith", s: "♾️", c: "#00ff88", n: "Zenith Core", ab: "Omni-Power" },
+        { r: "Glitch", s: "👾", c: "#ff00ff", n: "System.Error", ab: "Turbo++" },
+        { r: "Omni-God", s: "👁️", c: "#ffffff", n: "The Watcher", ab: "Godhood" }
     ];
 
-    let state = { lvl: 1, xp: 0, luck: 1, unlocked: new Set() };
+    let state = { lvl: 1, xp: 0, luck: 1, unlocked: [], turboSpeed: 100 };
 
-    // Build Gallery
-    const gal = document.getElementById('gallery');
-    database.forEach((item, idx) => {
-        let div = document.createElement('div');
-        div.className = 'gallery-item';
-        div.id = `gal-${idx}`;
-        div.innerText = item.s;
-        gal.appendChild(div);
-    });
+    function init() {
+        const saved = localStorage.getItem('dabestgame_save');
+        if (saved) {
+            state = JSON.parse(saved);
+            log("DATA_LOADED: Welcome back, Admin.");
+        }
+        buildGallery();
+        updateUI();
+    }
+
+    function buildGallery() {
+        const gal = document.getElementById('gallery');
+        gal.innerHTML = '';
+        database.forEach((item, idx) => {
+            let div = document.createElement('div');
+            div.className = 'gallery-item' + (state.unlocked.includes(idx) ? ' unlocked' : '');
+            div.id = `gal-${idx}`;
+            div.innerHTML = `${item.s} ${state.unlocked.includes(idx) ? `<div class="ability-tag">${item.ab}</div>` : ''}`;
+            gal.appendChild(div);
+        });
+    }
 
     function log(msg) {
         const l = document.getElementById('log');
@@ -110,54 +117,73 @@
     }
 
     function roll() {
-        state.xp += 20;
-        if(state.xp >= 100) { state.lvl++; state.xp = 0; }
+        state.xp += 10;
+        if(state.xp >= 100) { state.lvl++; state.xp = 0; log("LEVEL_UP!"); }
         
         let rng = (Math.random() * 1000) / state.luck;
         let idx = 0;
 
-        if (rng < 0.1) idx = 19; // Omni-God
-        else if (rng < 0.5) idx = 15; // Zenith
-        else if (rng < 2) idx = 14; // Lucky Duck
-        else if (rng < 10) idx = 12; // Divine
-        else if (rng < 50) idx = 8; // Legendary
-        else if (rng < 150) idx = 4; // Rare
-        else idx = Math.floor(Math.random() * 4); // Commons
+        if (rng < 0.2) idx = 9; // Omni-God
+        else if (rng < 1) idx = 8; // Glitch
+        else if (rng < 5) idx = 7; // Zenith
+        else if (rng < 15) idx = 6; // Duck
+        else if (rng < 50) idx = 5; // Legendary
+        else if (rng < 200) idx = 2; // Rare
+        else idx = Math.floor(Math.random() * 2);
 
         const entity = database[idx];
-        
-        // Update View
         document.getElementById('skin').innerText = entity.s;
         document.getElementById('rtag').innerText = entity.r.toUpperCase();
         document.getElementById('rtag').style.color = entity.c;
         document.getElementById('display-name').innerText = entity.n;
-        document.getElementById('aura').style.background = `radial-gradient(circle, ${entity.c} 0%, transparent 70%)`;
+        document.getElementById('ability-desc').innerText = `Ability: ${entity.ab}`;
+        document.getElementById('aura').style.background = `radial-gradient(circle, ${entity.c} 0%, transparent 75%)`;
         
-        // Update Luck if Duck
-        if(entity.r === "The Lucky Duck") {
-            state.luck += 0.5;
-            log("LUCKY DUCK: Luck increased by 0.5!");
-        }
-
-        // Unlock in Gallery
-        if(!state.unlocked.has(idx)) {
-            state.unlocked.add(idx);
-            document.getElementById(`gal-${idx}`).classList.add('unlocked');
-            log(`NEW DISCOVERY: ${entity.n}`);
+        if(!state.unlocked.includes(idx)) {
+            state.unlocked.push(idx);
+            log(`NEW_UNLOCK: ${entity.n}`);
+            applyAbilities();
+            buildGallery();
         }
 
         updateUI();
+        saveGame();
+    }
+
+    function applyAbilities() {
+        state.luck = 1;
+        state.turboSpeed = 100;
+        if(state.unlocked.includes(2)) state.luck += 0.1;
+        if(state.unlocked.includes(5)) state.luck += 1.0;
+        if(state.unlocked.includes(6)) state.luck += 0.5;
+        if(state.unlocked.includes(4)) state.turboSpeed = 70;
+        if(state.unlocked.includes(8)) state.turboSpeed = 40;
+    }
+
+    function saveGame() {
+        localStorage.setItem('dabestgame_save', JSON.stringify(state));
+    }
+
+    function resetGame() {
+        if(confirm("Confirm Wipe? All Rarity history will be deleted.")) {
+            localStorage.removeItem('dabestgame_save');
+            location.reload();
+        }
     }
 
     function updateUI() {
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('luck').innerText = state.luck.toFixed(1);
-        document.getElementById('col-count').innerText = state.unlocked.size;
+        document.getElementById('xp-val').innerText = state.xp;
     }
 
-    setInterval(() => {
-        if(document.getElementById('turbo').checked) roll();
-    }, 100);
+    let turboInterval;
+    document.getElementById('turbo').onchange = (e) => {
+        if(e.target.checked) turboInterval = setInterval(roll, state.turboSpeed);
+        else clearInterval(turboInterval);
+    };
+
+    init();
 </script>
 </body>
 </html>
