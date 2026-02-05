@@ -3,227 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Empire</title>
+    <title>Bio-Roll: God Tier</title>
     <style>
         :root { 
             --common: #ecf0f1; --uncommon: #2ecc71; --rare: #3498db; 
-            --legendary: #f1c40f; --mythic: #9b59b6; --shiny: #ff69b4; 
+            --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; --shiny: #ff69b4; 
             --bg: #050505; --panel: #111;
         }
         body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Layout */
-        .sidebar-left { width: 280px; background: var(--panel); border-right: 2px solid #222; padding: 15px; overflow-y: auto; }
-        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* Sidebar & Layout */
+        .sidebar-left { width: 300px; background: var(--panel); border-right: 2px solid #222; padding: 15px; overflow-y: auto; }
+        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
         .sidebar-right { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 15px; overflow-y: auto; }
 
-        /* Game Elements */
-        .stage { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
-        #art-display { font-size: 9rem; z-index: 2; }
-        .aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; filter: blur(45px); opacity: 0.4; }
+        /* The God Stage */
+        .stage { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #222; }
+        #art-display { font-size: 10rem; z-index: 2; }
+        .aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; filter: blur(60px); opacity: 0.3; transition: 0.5s; }
 
-        /* Shop Styling */
-        .shop-section { margin-bottom: 25px; }
-        .shop-card { 
-            background: #1a1a1a; border-radius: 12px; padding: 12px; margin-bottom: 10px; 
-            border-left: 4px solid #444; transition: 0.2s;
-        }
-        .shop-card:hover { background: #222; }
-        .shop-card.unlocked { border-left-color: var(--legendary); }
-        .price-tag { font-size: 0.75rem; color: #888; margin: 5px 0; }
-        
-        .buy-btn { 
-            width: 100%; padding: 8px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer;
-            background: #27ae60; color: white;
-        }
-        .buy-btn:disabled { background: #333; cursor: not-allowed; }
-
-        /* Mega Roll Button */
-        .mega-btn { 
-            background: linear-gradient(45deg, #e67e22, #f1c40f); 
-            width: 200px; padding: 12px; border-radius: 10px; border: none; color: white;
-            font-weight: bold; cursor: pointer; margin-top: 10px; display: none;
-        }
-
-        /* Collection Grid */
-        .book-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
-        .slot { width: 40px; height: 40px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-        .locked { opacity: 0.1; }
-
-        /* Text Colors */
+        /* Rarity Classes */
         .Common { color: var(--common); } .Uncommon { color: var(--uncommon); }
-        .Rare { color: var(--rare); } .Legendary { color: var(--legendary); } .Mythic { color: var(--mythic); }
+        .Rare { color: var(--rare); } .Legendary { color: var(--legendary); }
+        .Mythic { color: var(--mythic); text-shadow: 0 0 20px var(--mythic); }
+        .God { color: var(--god); text-shadow: 0 0 30px var(--god); animation: god-pulse 0.5s infinite alternate; }
+        @keyframes god-pulse { from { transform: scale(1); } to { transform: scale(1.1); filter: brightness(1.5); } }
+
+        /* Collection Book */
+        .book-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+        .slot { width: 40px; height: 40px; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid #333; }
+        .locked { opacity: 0.05; }
+
+        /* Shop & Buttons */
+        .shop-card { background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-bottom: 3px solid #333; }
+        .buy-btn { width: 100%; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background: #27ae60; color: white; }
+        .buy-btn:disabled { background: #444; }
+        .rebirth-btn { background: var(--god); margin-top: 10px; display: none; }
+        
+        .roll-btn { width: 250px; padding: 20px; font-size: 1.5rem; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; background: #3498db; color: white; box-shadow: 0 5px 0 #1a4f73; }
+        .mega-btn { background: #e67e22; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="sidebar-left">
-    <h3 style="color:var(--rare)">📖 COLLECTION</h3>
+    <h3 style="color:var(--rare)">📖 COLLECTION (100+)</h3>
     <div id="collection-grid" class="book-grid"></div>
-    <hr style="border:1px solid #222; margin:20px 0;">
-    <div id="stats-area"></div>
+    <div id="stats" style="margin-top:20px; font-size:0.8rem; background:#000; padding:10px; border-radius:10px;"></div>
 </div>
 
 <div class="main-game">
-    <div id="rarity-label" style="font-weight:bold; letter-spacing:4px; font-size: 0.8rem;">STANDING BY...</div>
-    <div class="stage" id="stage"><div class="aura"></div><div id="art-display">🥚</div></div>
-    <h1 id="name-display">ROLL START</h1>
-    <button class="buy-btn" style="width:250px; font-size:1.5rem; padding:15px;" onclick="roll(1)">ROLL</button>
-    <button id="mega-roll-ui" class="mega-btn" onclick="roll(10)">MEGA ROLL (x10)</button>
+    <div id="rarity-label" style="letter-spacing:5px; font-weight:bold; color:#444;">WAITING...</div>
+    <div class="stage" id="stage">
+        <div class="aura" id="aura"></div>
+        <div id="art-display">🥚</div>
+    </div>
+    <h1 id="name-display" style="margin:10px 0;">READY</h1>
+    <button class="roll-btn" onclick="roll(1)">ROLL</button>
+    <button id="mega-roll-ui" class="mega-btn buy-btn" onclick="roll(10)" style="width:200px;">MEGA ROLL x10</button>
 </div>
 
 <div class="sidebar-right">
-    <h2 style="color:var(--legendary); margin-top:0;">🏬 UPGRADE CENTER</h2>
-    
-    <div class="shop-section">
-        <h4 style="color:#888;">CONSUMABLES</h4>
-        <div class="shop-card">
-            <b>🍀 Luck Potion</b>
-            <div class="price-tag">Cost: 25 Common</div>
-            <button class="buy-btn" onclick="buy('luck', 25, 'Common')">Buy +0.5 Luck</button>
-        </div>
-    </div>
-
-    <div class="shop-section">
-        <h4 style="color:#888;">AUTOMATION</h4>
-        <div class="shop-card" id="auto-card">
-            <b>🤖 Auto-Roll Bot</b>
-            <div class="price-tag">Cost: 15 Uncommon</div>
-            <button class="buy-btn" id="auto-btn" onclick="buyAuto()">Activate Bot</button>
-        </div>
-        <div class="shop-card">
-            <b>⚡ Turbo Gears</b>
-            <div class="price-tag">Cost: 5 Rare</div>
-            <button class="buy-btn" onclick="buySpeed()">Double Speed</button>
-        </div>
-    </div>
-
-    <div class="shop-section">
-        <h4 style="color:#888;">SPECIAL TECH</h4>
-        <div class="shop-card">
-            <b>📦 Mega-Roll Module</b>
-            <div class="price-tag">Cost: 1 Legendary</div>
-            <button class="buy-btn" id="mega-btn-shop" onclick="buyMega()">Unlock x10 Roll</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const database = {
-        Common: [{id:"c1", n:"Cat", a:"🐈"}, {id:"c2", n:"Rat", a:"🐀"}, {id:"c3", n:"Ant", a:"🐜"}, {id:"c4", n:"Snail", a:"🐌"}],
-        Uncommon: [{id:"u1", n:"Fox", a:"🦊"}, {id:"u2", n:"Owl", a:"🦉"}, {id:"u3", n:"Deer", a:"🦌"}],
-        Rare: [{id:"r1", n:"Shark", a:"🦈"}, {id:"r2", n:"Lion", a:"🦁"}, {id:"r3", n:"Tiger", a:"🐯"}],
-        Legendary: [{id:"l1", n:"Dragon", a:"🐲"}, {id:"l2", n:"Phoenix", a:"🔥"}, {id:"l3", n:"Unicorn", a:"🦄"}],
-        Mythic: [{id:"m1", n:"GALAXY", a:"🌌"}, {id:"m2", n:"VOID", a:"🌀"}, {id:"m3", n:"GLITCH", a:"👾"}]
-    };
-
-    let s = { 
-        rolls: 0, luck: 1.0, auto: false, speed: 1000, mega: false,
-        inv: {Common:0, Uncommon:0, Rare:0, Legendary:0, Mythic:0}, unlocked: [] 
-    };
-
-    let autoInterval = null;
-
-    function roll(times) {
-        for(let i=0; i<times; i++) {
-            s.rolls++;
-            let rng = Math.random() * 1000000;
-            let t = "Common";
-            if (rng < (2 * s.luck)) t = "Mythic";
-            else if (rng < (450 * s.luck)) t = "Legendary";
-            else if (rng < (12000 * s.luck)) t = "Rare";
-            else if (rng < (250000 * s.luck)) t = "Uncommon";
-
-            s.inv[t]++;
-            const pick = database[t][Math.floor(Math.random() * database[t].length)];
-            if(!s.unlocked.includes(pick.id)) s.unlocked.push(pick.id);
-
-            if (i === times - 1) { // Only update visual for the last roll
-                updateStage(t, pick);
-            }
-        }
-        updateUI(); save();
-    }
-
-    function updateStage(t, pick) {
-        document.getElementById('stage').style.boxShadow = `inset 0 0 50px var(--${t.toLowerCase()})`;
-        document.getElementById('art-display').innerText = pick.a;
-        document.getElementById('name-display').innerText = pick.n;
-        document.getElementById('name-display').className = t;
-        document.getElementById('rarity-label').innerText = t;
-    }
-
-    function updateUI() {
-        // Stats
-        document.getElementById('stats-area').innerHTML = `
-            <b>Rolls:</b> ${s.rolls}<br>
-            <b>Luck:</b> ${s.luck.toFixed(1)}x<br><br>
-            <span class="Common">C: ${s.inv.Common}</span> | <span class="Uncommon">U: ${s.inv.Uncommon}</span><br>
-            <span class="Rare">R: ${s.inv.Rare}</span> | <span class="Legendary">L: ${s.inv.Legendary}</span><br>
-            <span class="Mythic">M: ${s.inv.Mythic}</span>
-        `;
-
-        // Collection
-        const grid = document.getElementById('collection-grid');
-        grid.innerHTML = "";
-        Object.values(database).flat().forEach(animal => {
-            const found = s.unlocked.includes(animal.id);
-            grid.innerHTML += `<div class="slot ${found ? '' : 'locked'}">${found ? animal.a : '?'}</div>`;
-        });
-
-        // Shop Buttons
-        if(s.auto) document.getElementById('auto-btn').innerText = "Active";
-        if(s.mega) {
-            document.getElementById('mega-btn-shop').innerText = "Unlocked";
-            document.getElementById('mega-roll-ui').style.display = "block";
-        }
-    }
-
-    function buy(type, cost, curr) {
-        if(s.inv[curr] >= cost) {
-            s.inv[curr] -= cost;
-            if(type === 'luck') s.luck += 0.5;
-            updateUI(); save();
-        }
-    }
-
-    function buyAuto() {
-        if(!s.auto && s.inv.Uncommon >= 15) {
-            s.inv.Uncommon -= 15; s.auto = true;
-            startAuto(); updateUI(); save();
-        }
-    }
-
-    function buySpeed() {
-        if(s.auto && s.inv.Rare >= 5) {
-            s.inv.Rare -= 5; s.speed = 500;
-            startAuto(); updateUI(); save();
-        }
-    }
-
-    function buyMega() {
-        if(!s.mega && s.inv.Legendary >= 1) {
-            s.inv.Legendary -= 1; s.mega = true;
-            updateUI(); save();
-        }
-    }
-
-    function startAuto() {
-        if(autoInterval) clearInterval(autoInterval);
-        autoInterval = setInterval(() => roll(1), s.speed);
-    }
-
-    function save() { localStorage.setItem('bioRoll_v9', JSON.stringify(s)); }
-    function load() {
-        const saved = localStorage.getItem('bioRoll_v9');
-        if(saved) { 
-            s = JSON.parse(saved); 
-            updateUI(); 
-            if(s.auto) startAuto();
-        } else { updateUI(); }
-    }
-
-    load();
-</script>
-</body>
-</html>
+    <h
