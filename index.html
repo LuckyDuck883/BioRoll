@@ -16,12 +16,11 @@
         .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
         /* The Duck Glow */
-        .lucky-glow { filter: drop-shadow(0 0 20px var(--ducky)); animation: duckFloat 2s infinite ease-in-out; }
-        @keyframes duckFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .lucky-glow { filter: drop-shadow(0 0 25px var(--ducky)); animation: duckFloat 1.5s infinite ease-in-out; }
+        @keyframes duckFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-25px) scale(1.1); } }
 
-        /* Leaderboard */
-        .leaderboard { background: #111; border: 1px solid var(--gold); padding: 10px; margin-top: 20px; font-size: 0.7rem; }
-        .leader-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
+        /* Safe Vault Styling */
+        .vault-box { background: rgba(255, 247, 0, 0.05); border: 2px dashed var(--ducky); padding: 10px; margin-top: 15px; border-radius: 10px; text-align: center; }
 
         /* P2W Prepare Button */
         .p2w-btn { 
@@ -31,27 +30,32 @@
             text-transform: uppercase; letter-spacing: 2px;
         }
 
-        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; }
+        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; position: relative; }
         
-        #tax-alert { position: absolute; top: 20%; color: #ff0055; font-weight: bold; display: none; z-index: 1000; background: #000; border: 2px solid #ff0055; padding: 10px; }
+        .leaderboard { background: #111; border: 1px solid var(--gold); padding: 10px; margin-top: 15px; font-size: 0.7rem; }
+        .leader-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body id="b">
-
-<div id="tax-alert">🚨 TAX COLLECTOR SPOTTED: 50% RARE LOSS! 🚨</div>
 
 <div class="panel">
     <h2 style="color:var(--gold); margin:0;">WHALE STATUS</h2>
     <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; font-size: 0.8rem;">
         <div>RANK: <span id="lvl">1</span></div>
-        <div>STABILITY: <span id="stab">100%</span></div>
+        <div>TOTAL LUCK: <span id="luck-total">1.0</span>x</div>
     </div>
     
-    <button class="p2w-btn" onclick="alert('Preparing... Please insert $999.99 to continue.')">PREPARE</button>
+    <button class="p2w-btn" onclick="alert('Preparing... Error: Admin Cousin already bought the whole server.')">PREPARE</button>
+
+    <div class="vault-box">
+        <div style="color:var(--ducky); font-weight:bold; font-size:0.8rem;">🦆 DUCK SANCTUARY</div>
+        <div style="font-size:1.2rem;" id="duck-vault-count">0</div>
+        <div style="font-size:0.5rem; color:#666;">Each Duck adds +0.5 Luck!</div>
+    </div>
 
     <div class="leaderboard">
         <div style="text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 5px;">TOP WHALES</div>
-        <div class="leader-row" style="color:var(--gold)"><span>1. Admin's Cousin</span> <span>999,999,999</span></div>
+        <div class="leader-row" style="color:var(--gold)"><span>1. Admin's Cousin</span> <span>999M</span></div>
         <div class="leader-row" style="color: #0f0;"><span>9,999+. YOU</span> <span id="my-score">0</span></div>
     </div>
     
@@ -74,17 +78,17 @@
 <div class="panel">
     <h3 style="color:#0f0; margin:0 0 10px 0;">ROOT_ACCESS</h3>
     <div id="console" style="background:#050505; border:1px solid #222; height:150px; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
-        > awaiting luck...
+        > awaiting duck energy...
     </div>
-    <p style="font-size: 0.6rem; color: #444;">Note: Admin commands may attract Tax Collectors.</p>
+    <div style="font-size:0.6rem; color:#444; margin-top:5px;">[SECURE] TAX_COLLECTOR: DELETED</div>
 </div>
 
 <script>
     const tiers = ["Common", "Rare", "Legendary", "The Lucky Duck", "Zenith"];
     const icons = ["🐹", "🐺", "🐲", "🦆", "♾️"];
-    const coolNames = ["Shadowstalker", "Neon Fang", "Titan-X", "Cyber-Beast", "Storm-Bringer", "Void-Walker", "Galactic Paw", "Omega-Claw"];
+    const coolNames = ["Shadowstalker", "Neon Fang", "Titan-X", "Cyber-Beast", "Storm-Bringer", "Void-Walker", "Galactic Paw", "Omega-Claw", "Frost-Byte", "Magma-Grip"];
     
-    let state = { lvl: 1, xp: 0, stab: 100, zenithCount: 0, inv: {} };
+    let state = { lvl: 1, xp: 0, duckLuck: 0, zenithCount: 0, inv: {} };
     tiers.forEach(t => state.inv[t] = 0);
 
     function log(msg) {
@@ -94,12 +98,18 @@
 
     function roll() {
         state.xp += 20;
-        if(state.xp >= 100) { state.lvl++; state.xp = 0; spawnTax(); }
+        if(state.xp >= 100) { state.lvl++; state.xp = 0; log(`LEVEL UP: Reach Rank ${state.lvl}`); }
         
-        let rng = Math.random() * 5000;
+        // Base luck 1.0 + 0.5 per Lucky Duck
+        let currentLuck = 1.0 + state.duckLuck;
+        let rng = (Math.random() * 5000) / currentLuck;
         let tIdx = 0;
         
-        if (rng < 1) tIdx = 3; // The Lucky Duck
+        if (rng < 1) {
+            tIdx = 3; // The Lucky Duck
+            state.duckLuck += 0.5;
+            log("LEGENDARY FIND: The Lucky Duck has entered the Sanctuary!");
+        } 
         else if (rng < 50) tIdx = 4; // Zenith
         else if (rng < 500) tIdx = 2; // Legendary
         else if (rng < 1500) tIdx = 1; // Rare
@@ -121,21 +131,14 @@
         updateUI();
     }
 
-    function spawnTax() {
-        if(Math.random() < 0.3) {
-            const loss = Math.floor(state.inv.Rare / 2);
-            state.inv.Rare -= loss;
-            document.getElementById('tax-alert').style.display = 'block';
-            log(`TAXED: Lost ${loss} Rare samples.`);
-            setTimeout(() => document.getElementById('tax-alert').style.display = 'none', 3000);
-        }
-    }
-
     function updateUI() {
         document.getElementById('lvl').innerText = state.lvl;
         document.getElementById('my-score').innerText = state.zenithCount;
+        document.getElementById('duck-vault-count').innerText = state.inv["The Lucky Duck"];
+        document.getElementById('luck-total').innerText = (1.0 + state.duckLuck).toFixed(1);
+        
         document.getElementById('inventory').innerHTML = tiers.slice().reverse().map(t => 
-            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
+            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #111;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
         ).join("");
     }
 
