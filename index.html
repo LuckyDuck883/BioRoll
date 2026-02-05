@@ -3,46 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Omnipotent Machines</title>
+    <title>Bio-Roll: 20-Tier Multiverse</title>
     <style>
         :root { 
-            --common: #95a5a6; --uncommon: #2ecc71; --rare: #3498db; 
-            --legendary: #f1c40f; --mythic: #9b59b6; --eldritch: #e67e22;
-            --godly: #ff3e3e; --ascended: #00ffff; --celestial: #ff00ff;
-            --void: #4b0082; --omnipotent: #ffffff; --shiny: #ff69b4;
-            --panel: rgba(10, 10, 10, 0.98);
+            --common: #95a5a6; --sturdy: #7f8c8d; --uncommon: #2ecc71; --vibrant: #27ae60;
+            --rare: #3498db; --elite: #2980b9; --legendary: #f1c40f; --mythic: #9b59b6;
+            --eldritch: #e67e22; --ancient: #d35400; --godly: #ff3e3e; --demonic: #c0392b;
+            --ascended: #00ffff; --celestial: #ff00ff; --galactic: #8e44ad; --void: #2c3e50;
+            --singularity: #000000; --multiversal: #ffffff; --omnipotent: #f39c12; --zenith: #00ff88;
+            --shiny: #ff69b4; --panel: rgba(10, 10, 10, 0.98);
         }
         
-        body { background: #000; color: #fff; font-family: 'Inter', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        #particle-canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+        body { background: #000; color: #fff; font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; transition: 0.5s; }
+        canvas { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
         #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
 
-        .sidebar, .shop-panel { width: 300px; background: var(--panel); border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
+        .sidebar, .shop-panel { width: 320px; background: var(--panel); border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
         .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 50; }
 
-        /* Stage Styling */
+        /* Stage */
         #display-stage { position: relative; width: 400px; height: 400px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-        .skin-layer { position: absolute; font-size: 11rem; z-index: 5; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
-        .aura-layer { position: absolute; font-size: 18rem; opacity: 0.2; filter: blur(60px); animation: pulse 2s infinite alternate; }
-        @keyframes pulse { from { transform: scale(0.8); opacity: 0.1; } to { transform: scale(1.3); opacity: 0.4; } }
+        .skin-layer { position: absolute; font-size: 11rem; z-index: 5; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); }
+        .aura-layer { position: absolute; font-size: 18rem; opacity: 0.15; filter: blur(60px); animation: pulse 2s infinite alternate; }
+        @keyframes pulse { from { transform: scale(0.8); } to { transform: scale(1.3); } }
 
         /* Gamble Button */
         .gamble-btn { 
-            width: 100%; padding: 20px; border: none; border-radius: 15px; cursor: pointer; font-weight: 900; 
-            background: linear-gradient(45deg, #fff, #aaa); color: #000; font-size: 1.6rem; 
-            box-shadow: 0 10px 0 #666; transition: 0.1s; text-transform: uppercase;
+            width: 100%; padding: 22px; border: none; border-radius: 18px; cursor: pointer; font-weight: 900; 
+            background: linear-gradient(135deg, #fff 0%, #bbb 100%); color: #000; font-size: 1.8rem; 
+            box-shadow: 0 8px 0 #777; transition: 0.1s; text-transform: uppercase; letter-spacing: 2px;
         }
-        .gamble-btn:active { transform: translateY(5px); box-shadow: 0 5px 0 #333; }
+        .gamble-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 #444; }
 
-        /* Progress & Cards */
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 12px; padding: 12px; margin-bottom: 10px; }
-        .xp-bar { width: 100%; height: 8px; background: #222; border-radius: 4px; margin-top: 8px; overflow: hidden; }
-        #xp-fill { width: 0%; height: 100%; background: var(--ascended); transition: 0.3s; }
-        .tag { font-size: 0.6rem; letter-spacing: 2px; color: #555; text-transform: uppercase; margin-bottom: 3px; display: block; }
+        /* Cards & XP */
+        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 12px; }
+        .xp-bar { width: 100%; height: 10px; background: #111; border-radius: 5px; margin-top: 10px; overflow: hidden; border: 1px solid #333; }
+        #xp-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #00ff88); transition: 0.4s; }
         
-        .shop-btn { background: #27ae60; color: #fff; width: 100%; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 5px; }
-        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        .shop-btn { background: #27ae60; color: #fff; width: 100%; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 8px; font-size: 0.8rem; }
+        .shop-btn:hover { filter: brightness(1.2); }
+        .shop-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+        .tag { font-size: 0.65rem; letter-spacing: 3px; color: #666; text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: bold; }
+        #inv-list div { margin-bottom: 4px; border-bottom: 1px solid #222; padding-bottom: 2px; }
     </style>
 </head>
 <body id="body">
@@ -51,14 +54,14 @@
 <canvas id="particle-canvas"></canvas>
 
 <div class="sidebar">
-    <span class="tag">Evolution Level</span>
+    <span class="tag">Entity Evolution</span>
     <div class="stat-card">
-        LEVEL <span id="lvl">1</span>
+        RANK <span id="lvl" style="font-size: 1.5rem; font-weight: 900; color:var(--zenith)">1</span>
         <div class="xp-bar"><div id="xp-fill"></div></div>
     </div>
-    <div class="stat-card">LUCK: <b id="luck-stat" style="color:var(--uncommon)">1.0x</b></div>
-    <span class="tag">The Vault (Total: <span id="total-rolls">0</span>)</span>
-    <div id="inv-list" style="font-size: 0.7rem; line-height: 1.4;"></div>
+    <div class="stat-card">MULTIVERSAL LUCK: <b id="luck-stat" style="color:var(--ascended)">1.0x</b></div>
+    <span class="tag">The Infinity Vault</span>
+    <div id="inv-list" style="font-size: 0.75rem;"></div>
 </div>
 
 <div class="main-game">
@@ -66,128 +69,139 @@
         <div id="aura-layer" class="aura-layer"></div>
         <div id="skin-layer" class="skin-layer">📦</div>
     </div>
-    <div id="rarity-tag" style="font-weight: 900; letter-spacing: 8px; margin-top: 15px; font-size: 1.2rem;">IDLE</div>
-    <div id="animal-name" style="font-size: 2.8rem; font-weight: 900; margin-bottom: 25px;">SCANNING...</div>
+    <div id="rarity-tag" style="font-weight: 900; letter-spacing: 10px; margin-top: 20px; font-size: 1.4rem; text-shadow: 0 0 10px rgba(255,255,255,0.3);">IDLE</div>
+    <div id="display-name" style="font-size: 3rem; font-weight: 900; margin-bottom: 30px; text-align: center;">...</div>
     
-    <div style="width: 320px; z-index: 500;">
+    <div style="width: 350px; z-index: 500;">
         <button class="gamble-btn" onclick="roll()">Gamble Time</button>
-        <div style="display:flex; justify-content:center; gap:20px; margin-top:15px;">
-            <label style="font-size: 0.7rem; color: #555; cursor:pointer;"><input type="checkbox" id="turbo"> TURBO SPLICER</label>
+        <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+            <label style="font-size: 0.75rem; color: #666; cursor:pointer;"><input type="checkbox" id="turbo"> HYPER-SPLICER</label>
         </div>
     </div>
 </div>
 
 <div class="shop-panel">
-    <span class="tag">Empire Upgrades</span>
+    <span class="tag">Cosmic Forge</span>
     <div class="stat-card">
-        <b style="color:var(--legendary)">Cybernetic Engine</b>
-        <p style="font-size: 0.6rem; color: #777;">+2.0 Luck Boost.</p>
-        <button class="shop-btn" onclick="buy('luck', 500, 'Common')">500 Common</button>
+        <b style="color:var(--mythic)">Neon Reactor</b>
+        <p style="font-size: 0.65rem; color: #888;">+5.0 Permanent Luck.</p>
+        <button class="shop-btn" onclick="buy('luck', 1000, 'Common')">1,000 Common</button>
     </div>
     <div class="stat-card">
-        <b style="color:var(--ascended)">Temporal Warp</b>
-        <p style="font-size: 0.6rem; color: #777;">Instantly gain 10 Levels.</p>
-        <button class="shop-btn" onclick="buy('level', 1, 'Godly')">1 Godly</button>
+        <b style="color:var(--godly)">Omega Catalyst</b>
+        <p style="font-size: 0.65rem; color: #888;">Skip 25 Ranks instantly.</p>
+        <button class="shop-btn" onclick="buy('level', 5, 'Godly')">5 Godly</button>
     </div>
     <div class="stat-card">
-        <b style="color:var(--shiny)">Collection Bonus</b>
-        <p style="font-size: 0.6rem; color: #777;">Trade 10 Legendaries for a Void Roll.</p>
-        <button class="shop-btn" onclick="buy('void', 10, 'Legendary')">10 Legendary</button>
+        <b style="color:var(--void)">Void Singularity</b>
+        <p style="font-size: 0.65rem; color: #888;">Guaranteed Zenith-Tier Roll.</p>
+        <button class="shop-btn" onclick="buy('zenith', 1, 'Omnipotent')">1 Omnipotent</button>
     </div>
 </div>
 
 <script>
     const database = {
-        Common: { c: "#95a5a6", p: [{n:"Ant",e:"🐜",a:"🍂"},{n:"Snail",e:"🐌",a:"🌱"},{n:"Bicycle",e:"🚲",a:"🚲"}]},
-        Uncommon: { c: "#2ecc71", p: [{n:"Frog",e:"🐸",a:"💧"},{n:"Motorcycle",e:"🏍️",a:"💨"},{n:"Bat",e:"🦇",a:"🌑"}]},
-        Rare: { c: "#3498db", p: [{n:"Shark",e:"🦈",a:"🌊"},{n:"Sports Car",e:"🏎️",a:"🏁"},{n:"Lion",e:"🦁",a:"🌅"}]},
-        Legendary: { c: "#f1c40f", p: [{n:"Dragon",e:"🐲",a:"⚡"},{n:"Private Jet",e:"🛩️",a:"☁️"},{n:"Phoenix",e:"🐦‍🔥",a:"🔥"}]},
-        Mythic: { c: "#9b59b6", p: [{n:"Glitch",e:"👾",a:"⬛"},{n:"Tank",e:"777",a:"💥"},{n:"Reaper",e:"💀",a:"🌀"}]},
-        Eldritch: { c: "#e67e22", p: [{n:"Cthulhu",e:"🐙",a:"👁️"},{n:"UFO",e:"🛸",a:"📡"}]},
-        Godly: { c: "#ff3e3e", p: [{n:"Supernova",e:"☀️",a:"💥"},{n:"Rocket",e:"🚀",a:"🚀"}]},
-        Ascended: { c: "#00ffff", p: [{n:"The All",e:"👁️‍🗨️",a:"🌌"},{n:"Starship",e:"🚢",a:"✨"}]},
-        Celestial: { c: "#ff00ff", p: [{n:"Nebula",e:"🌀",a:"⚛️"},{n:"Time Machine",e:"⏳",a:"🌀"}]},
-        Void: { c: "#4b0082", p: [{n:"Null",e:"🕳️",a:"🌑"},{n:"Shadow Ship",e:"🛸",a:"⬛"}]},
-        Omnipotent: { c: "#ffffff", p: [{n:"THE CREATOR",e:"👑",a:"✨"},{n:"Reality Drive",e:"🌌",a:"⚛️"}]}
+        Common: { c: "#95a5a6", p: [{n:"Stone Beetle",e:"🪲",a:"🪨"},{n:"Rusty Moped",e:"🛵",a:"💨"}]},
+        Sturdy: { c: "#7f8c8d", p: [{n:"Iron Boar",e:"🐗",a:"🛡️"},{n:"Sedan",e:"🚗",a:"🛣️"}]},
+        Uncommon: { c: "#2ecc71", p: [{n:"Leaf Raptor",e:"🦎",a:"🍃"},{n:"Dirt Bike",e:"🏍️",a:"🚵"}]},
+        Vibrant: { c: "#27ae60", p: [{n:"Neon Koi",e:"🐟",a:"✨"},{n:"Tuk Tuk",e:"🛺",a:"🏮"}]},
+        Rare: { c: "#3498db", p: [{n:"Frost Wolf",e:"🐺",a:"❄️"},{n:"Speedster",e:"🏎️",a:"🏁"}]},
+        Elite: { c: "#2980b9", p: [{n:"Storm Eagle",e:"🦅",a:"⚡"},{n:"Stealth Jet",e:"🛩️",a:"☁️"}]},
+        Legendary: { c: "#f1c40f", p: [{n:"Gold Lion",e:"🦁",a:"👑"},{n:"Super Yacht",e:"🚤",a:"🌊"}]},
+        Mythic: { c: "#9b59b6", p: [{n:"Abyss Hydra",e:"🐉",a:"🌀"},{n:"Hover Tank",e:"🚜",a:"💣"}]},
+        Eldritch: { c: "#e67e22", p: [{n:"Beholder",e:"👁️",a:"🔮"},{n:"Drill Mech",e:"🤖",a:"🧱"}]},
+        Ancient: { c: "#d35400", p: [{n:"Colossus",e:"🗿",a:"🌋"},{n:"Steam Crawler",e:"🚂",a:"⚙️"}]},
+        Godly: { c: "#ff3e3e", p: [{n:"Solar Phoenix",e:"🐦‍🔥",a:"☀️"},{n:"Star Destroyer",e:"🚀",a:"☄️"}]},
+        Demonic: { c: "#c0392b", p: [{n:"Hell Hound",e:"🐕‍🦺",a:"🔥"},{n:"Doom Walker",e:"🦾",a:"👹"}]},
+        Ascended: { c: "#00ffff", p: [{n:"Ether Whale",e:"🐋",a:"🌌"},{n:"Quantum Car",e:"🏎️",a:"⚛️"}]},
+        Celestial: { c: "#ff00ff", p: [{n:"Star Spirit",e:"✨",a:"🪐"},{n:"Galaxy Cruiser",e:"🛸",a:"🌌"}]},
+        Galactic: { c: "#8e44ad", p: [{n:"Nebula Worm",e:"🪱",a:"🌀"},{n:"Ark Ship",e:"🚢",a:"🛰️"}]},
+        Void: { c: "#2c3e50", p: [{n:"Shadow Stalker",e:"👤",a:"⬛"},{n:"Vanta Flyer",e:"🚁",a:"🌑"}]},
+        Singularity: { c: "#000000", p: [{n:"Event Horizon",e:"🕳️",a:"🌌"},{n:"Gravity Drive",e:"⚙️",a:"🧲"}]},
+        Multiversal: { c: "#ffffff", p: [{n:"Echo Prime",e:"🧬",a:"🌀"},{n:"Dimensional Rift",e:"⚡",a:"🪞"}]},
+        Omnipotent: { c: "#f39c12", p: [{n:"The Architect",e:"👑",a:"✨"},{n:"Reality Engine",e:"🌌",a:"⚛️"}]},
+        Zenith: { c: "#00ff88", p: [{n:"OMEGA ENTITY",e:"♾️",a:"🟢"},{n:"ZENITH ZERO",e:"💎",a:"⚪"}]}
     };
 
     let s = { rolls: 0, exp: 0, lvl: 1, luck: 1.0, inv: {} };
     for(let k in database) s.inv[k] = 0;
 
     function roll(forced = null) {
-        s.rolls++; s.exp += 12;
+        s.rolls++; s.exp += 15;
         if(s.exp >= 100) { s.lvl++; s.exp = 0; }
         
         let t = "Common";
         if (forced) { t = forced; } else {
-            let rng = Math.random() * 1000000;
+            let rng = Math.random() * 10000000; // Increased scale for 20 tiers
             let l = s.luck;
-            if (rng < (0.5 * l)) t = "Omnipotent";
-            else if (rng < (2 * l)) t = "Void";
-            else if (rng < (10 * l)) t = "Celestial";
-            else if (rng < (50 * l)) t = "Ascended";
-            else if (rng < (200 * l)) t = "Godly";
-            else if (rng < (1000 * l)) t = "Eldritch";
-            else if (rng < (5000 * l)) t = "Mythic";
-            else if (rng < (20000 * l)) t = "Legendary";
-            else if (rng < (100000 * l)) t = "Rare";
-            else if (rng < (300000 * l)) t = "Uncommon";
+            if (rng < (0.1 * l)) t = "Zenith";
+            else if (rng < (0.5 * l)) t = "Omnipotent";
+            else if (rng < (2 * l)) t = "Multiversal";
+            else if (rng < (10 * l)) t = "Singularity";
+            else if (rng < (50 * l)) t = "Void";
+            else if (rng < (200 * l)) t = "Galactic";
+            else if (rng < (500 * l)) t = "Celestial";
+            else if (rng < (1000 * l)) t = "Ascended";
+            else if (rng < (2500 * l)) t = "Demonic";
+            else if (rng < (5000 * l)) t = "Godly";
+            else if (rng < (10000 * l)) t = "Ancient";
+            else if (rng < (25000 * l)) t = "Eldritch";
+            else if (rng < (60000 * l)) t = "Mythic";
+            else if (rng < (150000 * l)) t = "Legendary";
+            else if (rng < (400000 * l)) t = "Elite";
+            else if (rng < (800000 * l)) t = "Rare";
+            else if (rng < (1500000 * l)) t = "Vibrant";
+            else if (rng < (3000000 * l)) t = "Uncommon";
+            else if (rng < (6000000 * l)) t = "Sturdy";
         }
 
         s.inv[t]++;
-        const pool = database[t].p;
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        const isShiny = Math.random() < 0.02;
-
-        updateDisplay(t, pick, isShiny);
+        const pick = database[t].p[Math.floor(Math.random() * database[t].p.length)];
+        updateDisplay(t, pick);
         updateUI();
     }
 
-    function updateDisplay(t, p, shiny) {
+    function updateDisplay(t, p) {
         const color = database[t].c;
-        const body = document.getElementById('body');
         const tag = document.getElementById('rarity-tag');
-        
         tag.innerText = t;
         tag.style.color = color;
-        document.getElementById('animal-name').innerText = (shiny ? "✨ " : "") + p.n;
-        document.getElementById('animal-name').style.color = color;
+        document.getElementById('display-name').innerText = p.n;
+        document.getElementById('display-name').style.color = color;
         document.getElementById('skin-layer').innerText = p.e;
         document.getElementById('aura-layer').innerText = p.a;
 
-        body.classList.remove('shake');
-        void body.offsetWidth; 
-        body.classList.add('shake');
-
-        if(["Omnipotent", "Void", "Celestial"].includes(t)) {
+        if(["Zenith", "Omnipotent", "Multiversal", "Singularity"].includes(t)) {
             document.getElementById('flash').style.opacity = "1";
-            setTimeout(() => document.getElementById('flash').style.opacity = "0", 300);
+            setTimeout(() => document.getElementById('flash').style.opacity = "0", 400);
         }
     }
 
     function buy(item, cost, curr) {
         if(s.inv[curr] >= cost) {
             s.inv[curr] -= cost;
-            if(item === 'luck') s.luck += 2.0;
-            if(item === 'level') s.lvl += 10;
-            if(item === 'void') roll('Void');
+            if(item === 'luck') s.luck += 5.0;
+            if(item === 'level') s.lvl += 25;
+            if(item === 'zenith') roll('Zenith');
             updateUI();
         }
     }
 
     function updateUI() {
         document.getElementById('lvl').innerText = s.lvl;
-        document.getElementById('total-rolls').innerText = s.rolls;
         document.getElementById('xp-fill').style.width = s.exp + "%";
         document.getElementById('luck-stat').innerText = s.luck.toFixed(1) + "x";
         let html = "";
-        for(let k in s.inv) if(s.inv[k] > 0) html += `<div><span style="color:${database[k].c}">${k}:</span> ${s.inv[k]}</div>`;
+        const keys = Object.keys(database).reverse();
+        keys.forEach(k => {
+            if(s.inv[k] > 0) html += `<div><span style="color:${database[k].c}">${k}:</span> ${s.inv[k]}</div>`;
+        });
         document.getElementById('inv-list').innerHTML = html;
     }
 
     let turbo;
     document.getElementById('turbo').onchange = (e) => {
-        if(e.target.checked) turbo = setInterval(roll, 100);
+        if(e.target.checked) turbo = setInterval(roll, 80);
         else clearInterval(turbo);
     };
 </script>
