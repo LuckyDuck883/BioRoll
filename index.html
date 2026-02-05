@@ -3,65 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: God Tier</title>
+    <title>BIO-ROLL: INFINITE</title>
     <style>
         :root { 
-            --common: #ecf0f1; --uncommon: #2ecc71; --rare: #3498db; 
-            --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; --shiny: #ff69b4; 
-            --bg: #050505; --panel: #111;
+            --common: #888; --uncommon: #2ecc71; --rare: #3498db; 
+            --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; 
         }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* Sidebar & Layout */
-        .sidebar-left { width: 300px; background: var(--panel); border-right: 2px solid #222; padding: 15px; overflow-y: auto; }
-        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        .sidebar-right { width: 320px; background: var(--panel); border-left: 2px solid #222; padding: 15px; overflow-y: auto; }
+        /* The Stage */
+        #display-box { text-align: center; margin-bottom: 30px; transition: 0.1s; }
+        #emoji { font-size: 12rem; display: block; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2)); }
+        #name { font-size: 2.5rem; font-weight: bold; margin: 10px 0; text-transform: uppercase; }
+        #rarity { font-size: 1rem; letter-spacing: 5px; opacity: 0.6; }
 
-        /* The God Stage */
-        .stage { position: relative; width: 320px; height: 320px; display: flex; align-items: center; justify-content: center; border-radius: 50%; border: 2px solid #222; }
-        #art-display { font-size: 10rem; z-index: 2; }
-        .aura { position: absolute; width: 100%; height: 100%; border-radius: 50%; filter: blur(60px); opacity: 0.3; transition: 0.5s; }
+        /* The Button */
+        .roll-trigger {
+            background: #fff; color: #000; border: none; padding: 25px 60px;
+            font-size: 2rem; font-weight: 900; cursor: pointer; border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.3); transition: 0.1s;
+        }
+        .roll-trigger:active { transform: scale(0.95); background: #ccc; }
 
-        /* Rarity Classes */
-        .Common { color: var(--common); } .Uncommon { color: var(--uncommon); }
-        .Rare { color: var(--rare); } .Legendary { color: var(--legendary); }
-        .Mythic { color: var(--mythic); text-shadow: 0 0 20px var(--mythic); }
-        .God { color: var(--god); text-shadow: 0 0 30px var(--god); animation: god-pulse 0.5s infinite alternate; }
-        @keyframes god-pulse { from { transform: scale(1); } to { transform: scale(1.1); filter: brightness(1.5); } }
-
-        /* Collection Book */
-        .book-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
-        .slot { width: 40px; height: 40px; background: #1a1a1a; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1rem; border: 1px solid #333; }
-        .locked { opacity: 0.05; }
-
-        /* Shop & Buttons */
-        .shop-card { background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border-bottom: 3px solid #333; }
-        .buy-btn { width: 100%; padding: 8px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; background: #27ae60; color: white; }
-        .buy-btn:disabled { background: #444; }
-        .rebirth-btn { background: var(--god); margin-top: 10px; display: none; }
+        /* Sidebar Stats */
+        .stats { position: absolute; bottom: 20px; left: 20px; font-size: 0.9rem; line-height: 1.5; color: #555; }
+        .inventory-peek { position: absolute; top: 20px; right: 20px; text-align: right; font-size: 0.8rem; }
         
-        .roll-btn { width: 250px; padding: 20px; font-size: 1.5rem; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; background: #3498db; color: white; box-shadow: 0 5px 0 #1a4f73; }
-        .mega-btn { background: #e67e22; margin-top: 10px; display: none; }
+        /* Rarity Effects */
+        .Mythic { text-shadow: 0 0 20px var(--mythic); color: var(--mythic); animation: shake 0.2s infinite; }
+        .God { text-shadow: 0 0 40px var(--god); color: var(--god); animation: zoom 0.5s infinite alternate; }
+        
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0,0); } }
+        @keyframes zoom { from { transform: scale(1); } to { transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
-<div class="sidebar-left">
-    <h3 style="color:var(--rare)">📖 COLLECTION (100+)</h3>
-    <div id="collection-grid" class="book-grid"></div>
-    <div id="stats" style="margin-top:20px; font-size:0.8rem; background:#000; padding:10px; border-radius:10px;"></div>
+<div class="inventory-peek" id="inv-count"></div>
+
+<div id="display-box">
+    <span id="rarity">TAP TO START</span>
+    <span id="emoji">🥚</span>
+    <div id="name">???</div>
 </div>
 
-<div class="main-game">
-    <div id="rarity-label" style="letter-spacing:5px; font-weight:bold; color:#444;">WAITING...</div>
-    <div class="stage" id="stage">
-        <div class="aura" id="aura"></div>
-        <div id="art-display">🥚</div>
-    </div>
-    <h1 id="name-display" style="margin:10px 0;">READY</h1>
-    <button class="roll-btn" onclick="roll(1)">ROLL</button>
-    <button id="mega-roll-ui" class="mega-btn buy-btn" onclick="roll(10)" style="width:200px;">MEGA ROLL x10</button>
+<button class="roll-trigger" onclick="roll()">ROLL</button>
+
+<div class="stats">
+    TOTAL ROLLS: <span id="stat-rolls">0</span><br>
+    LUCK MULTI: <span id="stat-luck">1.0</span>x
 </div>
 
-<div class="sidebar-right">
-    <h
+<script>
+    // MASSIVE ANIMAL DATABASE
+    const db = {
+        Common: ["🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🐤","🐣","🐥","🦆","🦅","🦉","🦇","🐺","🐗","🐴","🦄","🐝","🪱","🐛","🦋","🐌","🐞","🐜","🦟","🦗","🕷️","🕸️","🦂","🐢","🐍","🦎","🦖","🦕","🐙","🦑","🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🐘","🦛","🦏","🐪","🐫","🦒","🦘","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦙","🐐","🦌","🐕","🐩","🐈","🐓","🦃","🦚","🦜","🦢","🦩","🕊️","🐇","🦝","🦨","🦡","🦦","🦥","🐁","🐀","🐿️","🦔"],
+        Uncommon: ["🦊✨","🦌❄️","🐍🟢","🦜🌈","🐺🌙","🐆💨","🦓🦓","🦦🦦"],
+        Rare: ["🦁👑","🦅⚡","🦈💎","🦖🔥","🦄💎","🐉🌪️"],
+        Legendary: ["🐲🔥","🦅❄️","🐺🌑","🦁☀️","🐋🌌"],
+        Mythic: ["👾","🌀","🌌","💀","⏳","☄️"],
+        God: ["☀️","⚡","👁️","💎"]
+    };
+
+    let s = { rolls: 0, luck: 1.0, inv: {C:0, U:0, R:0, L:0, M:0, G:0} };
+
+    function roll() {
+        s.rolls++;
+        let rng = Math.random() * 1000000;
+        let t = "Common";
+        
+        // RNG Logic (Higher luck = better animals)
+        if (rng < (0.5 * s.luck)) t = "God";
+        else if (rng < (20 * s.luck)) t = "Mythic";
+        else if (rng < (1000 * s.luck)) t = "Legendary";
+        else if (rng < (15000 * s.luck)) t = "Rare";
+        else if (rng < (150000 * s.luck)) t = "Uncommon";
+
+        const pool = db[t];
+        const pick = pool[Math.floor(Math.random() * pool.length)];
+        
+        // Track Inventory
+        s.inv[t[0]]++;
+
+        // Visuals
+        document.getElementById('emoji').innerText = pick;
+        document.getElementById('name').innerText = t === "Common" ? "ANIMAL" : t;
+        document.getElementById('name').className = t;
+        document.getElementById('rarity').innerText = t.toUpperCase();
+        document.getElementById('rarity').style.color = `var(--${t.toLowerCase()})`;
+
+        // Shake on big hits
+        if(t !== "Common") {
+            document.body.style.backgroundColor = "#111";
+            setTimeout(() => document.body.style.backgroundColor = "#000", 50);
+        }
+
+        updateUI();
+        save();
+    }
+
+    function updateUI() {
+        document.getElementById('stat-rolls').innerText = s.rolls;
+        document.getElementById('stat-luck').innerText = s.luck.toFixed(1);
+        document.getElementById('inv-count').innerHTML = `
+            <span style="color:var(--common)">C:${s.inv.C}</span> 
+            <span style="color:var(--uncommon)">U:${s.inv.U}</span> 
+            <span style="color:var(--rare)">R:${s.inv.R}</span> 
+            <span style="color:var(--legendary)">L:${s.inv.L}</span><br>
+            <span style="color:var(--mythic)">M:${s.inv.M}</span> 
+            <span style="color:var(--god)">G:${s.inv.G}</span>
+        `;
+    }
+
+    function save() { localStorage.setItem('bioRoll_Extreme', JSON.stringify(s)); }
+    function load() {
+        const saved = localStorage.getItem('bioRoll_Extreme');
+        if(saved) { s = JSON.parse(saved); updateUI(); }
+    }
+
+    load();
+</script>
+</body>
+</html>
