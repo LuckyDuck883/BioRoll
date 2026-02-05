@@ -3,127 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bio-Roll: Shiny Doge Edition</title>
+    <title>Bio-Roll: Ultra Graphics</title>
     <style>
         :root { 
-            --common: #bdc3c7; --uncommon: #2ecc71; --rare: #3498db; 
-            --legendary: #f1c40f; --mythic: #9b59b6; --god: #e74c3c; 
-            --shiny: #ff69b4; --doge: #ffcc00;
+            --common: #95a5a6; --uncommon: #2ecc71; --rare: #3498db; 
+            --legendary: #f1c40f; --mythic: #9b59b6; --god: #ff3e3e; 
+            --shiny: #ff69b4; --doge: #ffcc00; --panel-bg: rgba(25, 25, 25, 0.8);
         }
-        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Layout Panels */
-        .sidebar { width: 260px; background: #111; border-right: 2px solid #222; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; background: radial-gradient(circle, #1a1a1a 0%, #0a0a0a 100%); }
-        .shop-panel { width: 300px; background: #111; border-left: 2px solid #222; padding: 20px; overflow-y: auto; }
+        body { 
+            background: #050505; color: #fff; font-family: 'Inter', 'Segoe UI', sans-serif; 
+            margin: 0; display: flex; height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at center, #111 0%, #050505 100%);
+        }
 
-        /* Stats & Labels */
-        .stat-box { background: #1a1a1a; padding: 12px; border-radius: 10px; border: 1px solid #333; }
-        .stat-box small { color: #666; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
-        .stat-val { font-size: 1.2rem; font-weight: bold; display: block; }
+        /* Glassmorphism Panels */
+        .sidebar, .shop-panel { 
+            width: 280px; background: var(--panel-bg); 
+            backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.05);
+            padding: 25px; display: flex; flex-direction: column;
+        }
 
-        /* Central Display */
-        #display-container { text-align: center; margin-bottom: 20px; }
-        #emoji-art { font-size: 9rem; display: block; transition: 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        #animal-name { font-size: 2.5rem; font-weight: 900; margin: 10px 0; }
-        #rarity-tag { font-size: 0.9rem; letter-spacing: 4px; font-weight: bold; opacity: 0.7; }
+        .main-game { 
+            flex-grow: 1; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; position: relative;
+        }
 
-        /* Buttons & Shop */
-        .roll-btn { width: 280px; padding: 20px; font-size: 1.5rem; font-weight: 800; border: none; border-radius: 50px; cursor: pointer; background: #fff; color: #000; box-shadow: 0 5px 0 #999; margin-bottom: 15px; }
-        .roll-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #999; }
+        /* The Visual Stage */
+        #display-stage {
+            position: relative; width: 350px; height: 350px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%; transition: 0.5s;
+        }
+
+        .glow-ring {
+            position: absolute; width: 100%; height: 100%; border-radius: 50%;
+            border: 2px solid transparent; transition: 0.5s; opacity: 0.3;
+        }
+
+        #emoji-art { 
+            font-size: 11rem; z-index: 5; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.5));
+        }
+
+        #animal-name { 
+            font-size: 3rem; font-weight: 900; margin: 15px 0 5px 0; 
+            letter-spacing: -1px; text-transform: uppercase;
+        }
+
+        #rarity-tag { font-size: 0.8rem; letter-spacing: 6px; font-weight: 800; opacity: 0.5; }
+
+        /* UI Elements */
+        .stat-card {
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px;
+        }
+
+        .roll-btn { 
+            width: 300px; padding: 22px; font-size: 1.4rem; font-weight: 800; 
+            border: none; border-radius: 18px; cursor: pointer;
+            background: linear-gradient(135deg, #fff 0%, #ddd 100%); color: #000;
+            box-shadow: 0 10px 30px rgba(255,255,255,0.1); transition: 0.2s;
+        }
+        .roll-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 40px rgba(255,255,255,0.2); }
+        .roll-btn:active { transform: translateY(2px); }
+
+        .shop-item {
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px;
+            margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* Rarity Visual Polish */
+        .is-shiny { animation: shiny-pulse 1.5s infinite alternate; }
+        @keyframes shiny-pulse { 
+            from { filter: drop-shadow(0 0 10px var(--shiny)) hue-rotate(0deg); } 
+            to { filter: drop-shadow(0 0 35px #fff) hue-rotate(45deg); } 
+        }
+
+        .God { color: var(--god); text-shadow: 0 0 25px rgba(231, 76, 60, 0.6); animation: god-vibe 0.3s infinite; }
+        @keyframes god-vibe { 0% { transform: scale(1); } 50% { transform: scale(1.02) rotate(1deg); } 100% { transform: scale(1); } }
         
-        .shop-item { background: #1a1a1a; padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #333; }
-        .shop-item b { display: block; color: var(--legendary); }
-        .buy-btn { width: 100%; margin-top: 8px; padding: 6px; border: none; border-radius: 5px; background: #27ae60; color: white; cursor: pointer; font-weight: bold; }
-        .buy-btn:disabled { background: #444; cursor: not-allowed; }
+        .Doge { color: var(--doge); text-shadow: 0 0 15px var(--doge); }
 
-        /* Animations & Effects */
-        .is-shiny { filter: drop-shadow(0 0 20px var(--shiny)); animation: shine-sparkle 0.8s infinite alternate; }
-        @keyframes shine-sparkle { from { filter: hue-rotate(0deg) drop-shadow(0 0 10px var(--shiny)); } to { filter: hue-rotate(360deg) drop-shadow(0 0 30px #fff); } }
-        
-        .God { animation: shake 0.2s infinite; color: var(--god); }
-        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(0,0); } }
-
-        /* Rarity Colors */
-        .Common { color: var(--common); } .Uncommon { color: var(--uncommon); } .Rare { color: var(--rare); } 
-        .Legendary { color: var(--legendary); } .Mythic { color: var(--mythic); } .Doge { color: var(--doge); }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
-    <h2 style="margin:0; color:var(--rare);">📈 STATS</h2>
-    <div class="stat-box"><small>Total Rolls</small><span class="stat-val" id="total-rolls">0</span></div>
-    <div class="stat-box"><small>Luck Level</small><span class="stat-val" id="luck-level" style="color:var(--uncommon);">1.0x</span></div>
-    <div class="stat-box"><small>Shinies</small><span class="stat-val" id="shiny-val" style="color:var(--shiny);">0</span></div>
-    
-    <h3 style="margin:20px 0 5px 0; font-size: 0.8rem; color: #555;">INVENTORY</h3>
-    <div id="inv-list" style="font-size: 0.85rem; line-height: 1.6;"></div>
+    <h2 style="font-size: 1.2rem; letter-spacing: 2px; color: #555; margin-bottom: 25px;">DASHBOARD</h2>
+    <div class="stat-card">
+        <div style="font-size: 0.7rem; color: #666;">TOTAL SAMPLES</div>
+        <div style="font-size: 1.5rem; font-weight: bold;" id="total-rolls">0</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 0.7rem; color: #666;">LUCK RATING</div>
+        <div style="font-size: 1.5rem; font-weight: bold; color: var(--uncommon);" id="luck-level">1.0x</div>
+    </div>
+    <div id="inv-list" style="margin-top: 10px; font-size: 0.85rem; opacity: 0.7;"></div>
 </div>
 
 <div class="main-game">
-    <div id="display-container">
-        <div id="rarity-tag">BEGIN ADVENTURE</div>
+    <div id="display-stage">
+        <div class="glow-ring" id="ring"></div>
         <span id="emoji-art">🥚</span>
-        <div id="animal-name">ROLL ME</div>
     </div>
-    <button class="roll-btn" onclick="roll()">ROLL 🐾</button>
-    <label style="color:#555; font-size: 0.8rem;"><input type="checkbox" id="turbo"> TURBO MODE</label>
+    <div id="rarity-tag">STABILIZING...</div>
+    <div id="animal-name">BIO-ROLL</div>
+    
+    <button class="roll-btn" onclick="roll()">SEQUENCE START</button>
+    <label style="margin-top: 15px; font-size: 0.7rem; color: #444; cursor: pointer; letter-spacing: 2px;">
+        <input type="checkbox" id="turbo"> TURBO OVERDRIVE
+    </label>
 </div>
 
 <div class="shop-panel">
-    <h2 style="margin:0; color:var(--legendary);">🛒 SHOP</h2>
-    <p style="font-size: 0.7rem; color: #555; margin-bottom: 20px;">Use your animals as currency</p>
-    
-    <div class="shop-item">
-        <b>🍀 Rabbit's Foot</b>
-        <span style="font-size:0.7rem;">+0.5 Luck Multiplier</span>
-        <button class="buy-btn" onclick="buy('luck', 40, 'Common')">Cost: 40 Common</button>
-    </div>
-
-    <div class="shop-item">
-        <b>🦴 Golden Bone</b>
-        <span style="font-size:0.7rem;">Huge +2.0 Luck Boost</span>
-        <button class="buy-btn" onclick="buy('luck', 5, 'Rare')">Cost: 5 Rare</button>
-    </div>
-
-    <div class="shop-item">
-        <b>✨ Shiny Magnet</b>
-        <span style="font-size:0.7rem;">Double Shiny Chance</span>
-        <button class="buy-btn" onclick="buy('shinyRate', 15, 'Uncommon')">Cost: 15 Uncommon</button>
-    </div>
+    <h2 style="font-size: 1.2rem; letter-spacing: 2px; color: var(--legendary); margin-bottom: 25px;">MARKET</h2>
+    <div id="shop-container">
+        </div>
 </div>
 
 <script>
     const database = {
-        Common: [
-            {n: "Street Cat", e: "🐈"}, {n: "City Rat", e: "🐀"}, {n: "Pigeon", e: "🐦"}, 
-            {n: "Garden Snail", e: "🐌"}, {n: "Worker Ant", e: "🐜"}, {n: "Green Frog", e: "🐸"}
-        ],
-        Uncommon: [
-            {n: "Red Fox", e: "🦊"}, {n: "Wise Owl", e: "🦉"}, {n: "Forest Deer", e: "🦌"}, 
-            {n: "Fruit Bat", e: "🦇"}, {n: "Raccoon", e: "🦝"}
-        ],
-        Rare: [
-            {n: "DOGE", e: "🐕"}, {n: "Great Shark", e: "🦈"}, {n: "Mountain Lion", e: "🦁"}, 
-            {n: "Polar Bear", e: "🐻‍❄️"}, {n: "King Cobra", e: "🐍"}
-        ],
-        Legendary: [
-            {n: "Fire Dragon", e: "🐲"}, {n: "Ice Phoenix", e: "🐦‍❄️"}, {n: "Holy Unicorn", e: "🦄"}
-        ],
-        Mythic: [
-            {n: "VOID ENTITY", e: "🌀"}, {n: "SYSTEM GLITCH", e: "👾"}, {n: "GALAXY WHALE", e: "🐋🌌"}
-        ],
-        God: [
-            {n: "THE SUN", e: "☀️"}, {n: "ETERNITY", e: "💎"}, {n: "ZEUS", e: "⚡"}
-        ]
+        Common: [{n:"Cat",e:"🐈"},{n:"Rat",e:"🐀"},{n:"Ant",e:"🐜"},{n:"Snail",e:"🐌"}],
+        Uncommon: [{n:"Fox",e:"🦊"},{n:"Owl",e:"🦉"},{n:"Deer",e:"🦌"},{n:"Raccoon",e:"🦝"}],
+        Rare: [{n:"DOGE",e:"🐕"},{n:"Shark",e:"🦈"},{n:"Tiger",e:"🐯"},{n:"Eagle",e:"🦅"}],
+        Legendary: [{n:"Dragon",e:"🐲"},{n:"Phoenix",e:"🐦‍🔥"},{n:"Unicorn",e:"🦄"}],
+        Mythic: [{n:"VOID",e:"🌀"},{n:"GLITCH",e:"👾"},{n:"GALAXY",e:"🐋"}],
+        God: [{n:"THE SUN",e:"☀️"},{n:"ETERNITY",e:"💎"},{n:"ZEUS",e:"⚡"}]
     };
 
-    let s = {
-        rolls: 0, luck: 1.0, shinies: 0, sMod: 100,
-        inv: { Common: 0, Uncommon: 0, Rare: 0, Legendary: 0, Mythic: 0, God: 0 }
-    };
-
+    let s = { rolls: 0, luck: 1.0, shinies: 0, sMod: 100, inv: { Common:0, Uncommon:0, Rare:0, Legendary:0, Mythic:0, God:0 } };
     let turboInterval = null;
 
     function roll() {
@@ -131,47 +144,75 @@
         let rng = Math.random() * 1000000;
         let t = "Common";
         
-        if (rng < (1 * s.luck)) t = "God";
-        else if (rng < (100 * s.luck)) t = "Mythic";
-        else if (rng < (2000 * s.luck)) t = "Legendary";
-        else if (rng < (35000 * s.luck)) t = "Rare";
-        else if (rng < (200000 * s.luck)) t = "Uncommon";
+        if (rng < (1.2 * s.luck)) t = "God";
+        else if (rng < (80 * s.luck)) t = "Mythic";
+        else if (rng < (1500 * s.luck)) t = "Legendary";
+        else if (rng < (25000 * s.luck)) t = "Rare";
+        else if (rng < (180000 * s.luck)) t = "Uncommon";
 
         s.inv[t]++;
-        const pool = database[t];
-        const pick = pool[Math.floor(Math.random() * pool.length)];
-        
-        // Shiny Roll (1 in sMod)
+        const pick = database[t][Math.floor(Math.random() * database[t].length)];
         let isShiny = (Math.random() * s.sMod) < 1;
         if(isShiny) s.shinies++;
 
-        // UI Update
-        const nameEl = document.getElementById('animal-name');
-        const artEl = document.getElementById('emoji-art');
-        const rTag = document.getElementById('rarity-tag');
-
-        artEl.innerText = pick.e;
-        artEl.className = isShiny ? "is-shiny" : "";
+        // UI Interaction
+        const ring = document.getElementById('ring');
+        const art = document.getElementById('emoji-art');
+        const name = document.getElementById('animal-name');
         
-        nameEl.innerText = (isShiny ? "✨ SHINY " : "") + pick.n;
-        nameEl.className = pick.n === "DOGE" ? "Doge" : t;
+        const color = getComputedStyle(document.documentElement).getPropertyValue(`--${t.toLowerCase()}`);
+        ring.style.boxShadow = `0 0 80px ${color}`;
+        ring.style.borderColor = color;
         
-        rTag.innerText = t.toUpperCase();
-        rTag.style.color = `var(--${t.toLowerCase()})`;
+        art.innerText = pick.e;
+        art.className = isShiny ? "is-shiny" : "";
+        
+        name.innerText = (isShiny ? "✨ " : "") + pick.n;
+        name.className = pick.n === "DOGE" ? "Doge" : t;
+        name.style.color = isShiny ? "var(--shiny)" : "";
+        
+        document.getElementById('rarity-tag').innerText = t.toUpperCase();
+        document.getElementById('rarity-tag').style.color = color;
 
         updateUI();
         save();
     }
 
-    function buy(item, cost, curr) {
-        if (s.inv[curr] >= cost) {
+    function updateUI() {
+        document.getElementById('total-rolls').innerText = s.rolls.toLocaleString();
+        document.getElementById('luck-level').innerText = s.luck.toFixed(1) + "x";
+        
+        let invHTML = "";
+        for (let key in s.inv) {
+            invHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span style="color:var(--${key.toLowerCase()})">${key}</span>
+                <span>${s.inv[key]}</span>
+            </div>`;
+        }
+        document.getElementById('inv-list').innerHTML = invHTML;
+
+        // Simple Shop Injection
+        const shop = document.getElementById('shop-container');
+        shop.innerHTML = `
+            <div class="shop-item">
+                <div style="font-weight:bold;">🍀 Luck Infusion</div>
+                <div style="font-size:0.7rem; color:#666; margin:5px 0;">Permanent +0.5 Luck</div>
+                <button class="roll-btn" style="width:100%; padding:10px; font-size:0.8rem; box-shadow:none;" onclick="buy('luck', 50, 'Common')">Cost: 50 Common</button>
+            </div>
+            <div class="shop-item">
+                <div style="font-weight:bold; color:var(--shiny);">✨ Shiny Polisher</div>
+                <div style="font-size:0.7rem; color:#666; margin:5px 0;">Better Shiny Odds</div>
+                <button class="roll-btn" style="width:100%; padding:10px; font-size:0.8rem; box-shadow:none;" onclick="buy('shiny', 20, 'Uncommon')">Cost: 20 Uncommon</button>
+            </div>
+        `;
+    }
+
+    function buy(type, cost, curr) {
+        if(s.inv[curr] >= cost) {
             s.inv[curr] -= cost;
-            if (item === 'luck') s.luck += (cost >= 40 ? 0.5 : 2.0);
-            if (item === 'shinyRate') s.sMod /= 2;
+            if(type === 'luck') s.luck += 0.5;
+            if(type === 'shiny') s.sMod /= 2;
             updateUI(); save();
-            alert("Upgrade Purchased!");
-        } else {
-            alert("Not enough " + curr + " animals!");
         }
     }
 
@@ -180,21 +221,9 @@
         else clearInterval(turboInterval);
     });
 
-    function updateUI() {
-        document.getElementById('total-rolls').innerText = s.rolls;
-        document.getElementById('luck-level').innerText = s.luck.toFixed(1) + "x";
-        document.getElementById('shiny-val').innerText = s.shinies;
-        
-        let invHTML = "";
-        for (let key in s.inv) {
-            invHTML += `<div style="color:var(--${key.toLowerCase()})">${key}: ${s.inv[key]}</div>`;
-        }
-        document.getElementById('inv-list').innerHTML = invHTML;
-    }
-
-    function save() { localStorage.setItem('bioRoll_Final', JSON.stringify(s)); }
+    function save() { localStorage.setItem('bioRoll_Ultra', JSON.stringify(s)); }
     function load() {
-        const saved = localStorage.getItem('bioRoll_Final');
+        const saved = localStorage.getItem('bioRoll_Ultra');
         if(saved) { s = JSON.parse(saved); updateUI(); }
     }
 
