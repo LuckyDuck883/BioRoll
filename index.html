@@ -3,101 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DABESTGAME</title>
+    <title>DABESTGAME - DUCK_EDITION</title>
     <style>
         :root { 
-            --panel: rgba(10, 10, 10, 0.98);
-            --zenith: #00ff88; --gold: #ffd700;
+            --bg: #050505; --text: #0f0; --gold: #ffd700;
+            --zenith: #00ff88; --ducky: #fff700;
         }
         
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background: var(--bg); color: var(--text); font-family: 'Consolas', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebars */
-        .sidebar { width: 300px; background: var(--panel); border: 1px solid #222; padding: 20px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
-        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .panel { width: 300px; background: #000; border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+
+        /* The Duck Glow */
+        .lucky-glow { filter: drop-shadow(0 0 20px var(--ducky)); animation: duckFloat 2s infinite ease-in-out; }
+        @keyframes duckFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
 
         /* Leaderboard */
-        .leaderboard { background: rgba(255,255,255,0.05); border: 1px solid var(--gold); padding: 10px; border-radius: 10px; margin-top: 15px; font-size: 0.8rem; }
-        .l-row { display: flex; justify-content: space-between; padding: 2px 0; }
-        .gold-txt { color: var(--gold); font-weight: bold; }
+        .leaderboard { background: #111; border: 1px solid var(--gold); padding: 10px; margin-top: 20px; font-size: 0.7rem; }
+        .leader-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px solid #222; }
 
-        /* OG Stage */
-        #display-stage { font-size: 11rem; height: 300px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 0 20px rgba(255,255,255,0.1)); }
-        
-        /* Buttons */
-        .gamble-btn { 
-            width: 100%; padding: 20px; border: none; border-radius: 15px; cursor: pointer; font-weight: 900; 
-            background: #fff; color: #000; font-size: 1.8rem; box-shadow: 0 6px 0 #999; transition: 0.1s;
-        }
-        .gamble-btn:active { transform: translateY(3px); box-shadow: 0 3px 0 #666; }
-
+        /* P2W Prepare Button */
         .p2w-btn { 
-            background: linear-gradient(135deg, var(--gold), #ff8c00); color: #000; padding: 12px; 
-            border: none; border-radius: 10px; font-weight: 900; width: 100%; cursor: pointer; margin-top: 10px;
+            background: linear-gradient(45deg, #ffd700, #ff8c00); color: #000; border: none; 
+            padding: 15px; font-weight: 900; cursor: pointer; width: 100%; border-radius: 50px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); margin-top: 10px;
+            text-transform: uppercase; letter-spacing: 2px;
         }
 
-        .stat-card { background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 10px; }
-        .tag { font-size: 0.65rem; letter-spacing: 2px; color: #666; text-transform: uppercase; }
-
-        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        .stage-box { width: 280px; height: 280px; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7rem; transition: 0.3s; }
+        
+        #tax-alert { position: absolute; top: 20%; color: #ff0055; font-weight: bold; display: none; z-index: 1000; background: #000; border: 2px solid #ff0055; padding: 10px; }
     </style>
 </head>
-<body>
+<body id="b">
 
-<div class="sidebar">
-    <h1 style="color:var(--zenith); font-style: italic; margin:0;">DABESTGAME</h1>
-    <div class="stat-card">
-        <span class="tag">Rank Progress</span>
-        <div style="font-size: 1.2rem; font-weight: 900;">LVL <span id="lvl">1</span></div>
+<div id="tax-alert">🚨 TAX COLLECTOR SPOTTED: 50% RARE LOSS! 🚨</div>
+
+<div class="panel">
+    <h2 style="color:var(--gold); margin:0;">WHALE STATUS</h2>
+    <div style="background: #0a0a0a; border: 1px solid #222; padding: 10px; margin-bottom: 10px; font-size: 0.8rem;">
+        <div>RANK: <span id="lvl">1</span></div>
+        <div>STABILITY: <span id="stab">100%</span></div>
     </div>
+    
+    <button class="p2w-btn" onclick="alert('Preparing... Please insert $999.99 to continue.')">PREPARE</button>
 
     <div class="leaderboard">
-        <div style="text-align: center; color: var(--gold); margin-bottom: 5px;">WORLD RANKINGS</div>
-        <div class="l-row gold-txt"><span>1. Admin's Cousin</span> <span>999,999,999</span></div>
-        <div class="l-row"><span>2. Dev_Brother</span> <span>850,000,000</span></div>
-        <div class="l-row" style="color: #0f0;"><span>9,999+. YOU</span> <span id="my-score">0</span></div>
+        <div style="text-align: center; color: var(--gold); font-weight: bold; margin-bottom: 5px;">TOP WHALES</div>
+        <div class="leader-row" style="color:var(--gold)"><span>1. Admin's Cousin</span> <span>999,999,999</span></div>
+        <div class="leader-row" style="color: #0f0;"><span>9,999+. YOU</span> <span id="my-score">0</span></div>
     </div>
-
-    <button class="p2w-btn" onclick="spawnAds()">PREPARE</button>
-    <div id="inv-list" style="margin-top: 20px; font-size: 0.8rem;"></div>
+    
+    <div id="inventory" style="overflow-y:auto; flex-grow:1; font-size: 0.65rem; margin-top: 10px; border-top: 1px solid #333;"></div>
 </div>
 
-<div class="main-game" id="main">
-    <div id="display-stage">📦</div>
-    <div id="rarity-tag" style="font-weight: 900; letter-spacing: 5px; margin-top: 10px; font-size: 1.2rem; color: #555;">READY</div>
-    <div id="display-name" style="font-size: 2.5rem; font-weight: 900; margin-bottom: 30px;">...</div>
+<div class="main">
+    <div class="stage-box" id="s">📦</div>
+    <div id="rtag" style="font-weight:900; color:#444; margin-top: 10px; letter-spacing: 3px;">SYSTEM_IDLE</div>
+    <div id="display-name" style="font-size: 1.5rem; color: #fff; margin-top: 5px;">...</div>
     
-    <div style="width: 300px;">
-        <button class="gamble-btn" onclick="roll()">Gamble Time</button>
-        <label style="display:block; text-align:center; margin-top:10px; color:#444; font-size:0.7rem;">
-            <input type="checkbox" id="turbo"> TURBO MODE
-        </label>
+    <div style="width: 250px; margin-top: 20px;">
+        <button style="width:100%; padding:15px; font-weight:900; cursor:pointer;" onclick="roll()">ROLL ENTITY</button>
+        <div style="text-align:center; font-size:0.6rem; color:#333; margin-top:5px;">
+            <input type="checkbox" id="turbo"> HYPER_SPLICER
+        </div>
     </div>
 </div>
 
-<div class="sidebar" style="border-left: 1px solid #222;">
-    <span class="tag">Admin Console</span>
-    <div style="background:#000; border:1px solid #333; height:100px; padding:5px; font-family:monospace; font-size:0.6rem; color:#0f0; overflow:hidden;" id="console">
-        > system root active...
+<div class="panel">
+    <h3 style="color:#0f0; margin:0 0 10px 0;">ROOT_ACCESS</h3>
+    <div id="console" style="background:#050505; border:1px solid #222; height:150px; font-size:0.6rem; padding:5px; color:#555; overflow:hidden;">
+        > awaiting luck...
     </div>
-    <button style="background:#222; color:#fff; border:none; padding:5px; font-size:0.6rem; cursor:pointer; margin-top:5px;" onclick="adminTroll()">EXECUTE CMD</button>
-    
-    <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
-    <span class="tag">Global News</span>
-    <div id="news-ticker" style="font-size:0.7rem; color:#888;">Admin's Cousin just rolled a Zenith x50...</div>
+    <p style="font-size: 0.6rem; color: #444;">Note: Admin commands may attract Tax Collectors.</p>
 </div>
 
 <script>
-    const database = {
-        Common: { c: "#95a5a6", e: "🐹" },
-        Rare: { c: "#3498db", e: "🐺" },
-        Legendary: { c: "#f1c40f", e: "🦁" },
-        Godly: { c: "#ff3e3e", e: "🐦‍🔥" },
-        Zenith: { c: "#00ff88", e: "♾️" }
-    };
-
-    let s = { lvl: 1, xp: 0, zeniths: 0, inv: { Common: 0, Rare: 0, Legendary: 0, Godly: 0, Zenith: 0 } };
+    const tiers = ["Common", "Rare", "Legendary", "The Lucky Duck", "Zenith"];
+    const icons = ["🐹", "🐺", "🐲", "🦆", "♾️"];
+    const coolNames = ["Shadowstalker", "Neon Fang", "Titan-X", "Cyber-Beast", "Storm-Bringer", "Void-Walker", "Galactic Paw", "Omega-Claw"];
+    
+    let state = { lvl: 1, xp: 0, stab: 100, zenithCount: 0, inv: {} };
+    tiers.forEach(t => state.inv[t] = 0);
 
     function log(msg) {
         const con = document.getElementById('console');
@@ -105,63 +93,50 @@
     }
 
     function roll() {
-        // Tax Collector Logic (1% chance)
-        if (Math.random() < 0.01 && s.inv.Rare > 1) {
-            let tax = Math.floor(s.inv.Rare / 2);
-            s.inv.Rare -= tax;
-            document.getElementById('main').classList.add('shake');
-            setTimeout(() => document.getElementById('main').classList.remove('shake'), 500);
-            log(`TAX COLLECTOR: Seized ${tax} Rares for 'Maintenance'.`);
-            alert(`TAX COLLECTOR APPEARED! He took ${tax} Rares.`);
-            updateUI();
-            return;
-        }
-
-        s.xp += 20;
-        if(s.xp >= 100) { s.lvl++; s.xp = 0; }
+        state.xp += 20;
+        if(state.xp >= 100) { state.lvl++; state.xp = 0; spawnTax(); }
         
-        let rng = Math.random() * 100;
-        let t = "Common";
-        if (rng < 1) { t = "Zenith"; s.zeniths++; }
-        else if (rng < 10) t = "Godly";
-        else if (rng < 30) t = "Rare";
+        let rng = Math.random() * 5000;
+        let tIdx = 0;
+        
+        if (rng < 1) tIdx = 3; // The Lucky Duck
+        else if (rng < 50) tIdx = 4; // Zenith
+        else if (rng < 500) tIdx = 2; // Legendary
+        else if (rng < 1500) tIdx = 1; // Rare
 
-        s.inv[t]++;
-        updateDisplay(t);
+        let tier = tiers[tIdx];
+        state.inv[tier]++;
+        
+        const stage = document.getElementById('s');
+        stage.innerText = icons[tIdx];
+        stage.className = (tier === "The Lucky Duck") ? "stage-box lucky-glow" : "stage-box";
+        
+        document.getElementById('rtag').innerText = tier.toUpperCase();
+        document.getElementById('rtag').style.color = (tier === "The Lucky Duck") ? "var(--ducky)" : "#444";
+        
+        const randomName = coolNames[Math.floor(Math.random() * coolNames.length)] + "-" + Math.floor(Math.random()*99);
+        document.getElementById('display-name').innerText = (tier === "The Lucky Duck") ? "QUACKMASTER-9000" : randomName;
+        
+        if(tIdx >= 3) state.zenithCount++;
         updateUI();
     }
 
-    function updateDisplay(t) {
-        document.getElementById('display-stage').innerText = database[t].e;
-        document.getElementById('rarity-tag').innerText = t.toUpperCase();
-        document.getElementById('rarity-tag').style.color = database[t].c;
-        document.getElementById('display-name').innerText = "ENTITY_" + Math.floor(Math.random()*999);
-    }
-
-    function spawnAds() {
-        log("PREPARING ASSETS...");
-        for(let i=0; i<3; i++) {
-            alert("ADMIN MESSAGE: You are currently Rank 9,999+. Please buy more GEMS to see Rank 9,998.");
+    function spawnTax() {
+        if(Math.random() < 0.3) {
+            const loss = Math.floor(state.inv.Rare / 2);
+            state.inv.Rare -= loss;
+            document.getElementById('tax-alert').style.display = 'block';
+            log(`TAXED: Lost ${loss} Rare samples.`);
+            setTimeout(() => document.getElementById('tax-alert').style.display = 'none', 3000);
         }
-    }
-
-    function adminTroll() {
-        const t = [
-            () => { document.body.style.transform = "rotate(5deg)"; log("UI_CALIBRATION_FAILED"); },
-            () => { s.inv.Common = 0; log("CLEANUP: Removed all 'trash' entities."); },
-            () => { alert("Admin's Cousin is laughing at your score."); }
-        ];
-        t[Math.floor(Math.random()*t.length)]();
     }
 
     function updateUI() {
-        document.getElementById('lvl').innerText = s.lvl;
-        document.getElementById('my-score').innerText = s.zeniths;
-        let html = "";
-        for(let k in s.inv) {
-            if(s.inv[k] > 0) html += `<div style="color:${database[k].c}">${k}: ${s.inv[k]}</div>`;
-        }
-        document.getElementById('inv-list').innerHTML = html;
+        document.getElementById('lvl').innerText = state.lvl;
+        document.getElementById('my-score').innerText = state.zenithCount;
+        document.getElementById('inventory').innerHTML = tiers.slice().reverse().map(t => 
+            state.inv[t] > 0 ? `<div style="display:flex; justify-content:space-between;"><span>${t}:</span> <span>${state.inv[t]}</span></div>` : ""
+        ).join("");
     }
 
     setInterval(() => { if(document.getElementById('turbo').checked) roll(); }, 100);
