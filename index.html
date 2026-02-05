@@ -6,148 +6,163 @@
     <title>DABESTGAME</title>
     <style>
         :root { 
-            --common: #95a5a6; --rare: #3498db; --legendary: #f1c40f; --godly: #ff3e3e; 
-            --ascended: #00ffff; --void: #2c3e50; --omnipotent: #f39c12; --zenith: #00ff88;
-            --error: #ff0055; --panel: rgba(10, 10, 10, 0.98);
+            --bg: #000; --text: #fff; --accent: #0f0;
+            --common: #95a5a6; --rare: #3498db; --legendary: #f1c40f; 
+            --zenith: #00ff88; --darkmatter: #7000ff;
         }
         
-        body { background: #000; color: #fff; font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; transition: 0.3s; }
-        #flash { position: fixed; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 2000; }
+        body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar & Panels */
+        .panel { width: 300px; background: rgba(10,10,10,0.95); border: 1px solid #222; padding: 15px; overflow-y: auto; z-index: 100; }
+        .main { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
 
-        .sidebar, .shop-panel { width: 280px; background: var(--panel); border: 1px solid #222; padding: 15px; display: flex; flex-direction: column; z-index: 100; overflow-y: auto; }
-        .main-game { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        /* The Breach - Troll Element */
+        #breach-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 500; opacity: 0; background: repeating-linear-gradient(0deg, rgba(0,255,0,0.03) 0px, rgba(0,255,0,0.03) 1px, transparent 2px); }
+        
+        /* Game Elements */
+        .stage { font-size: 10rem; height: 250px; display: flex; align-items: center; justify-content: center; transition: 0.1s; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: 900; background: #fff; color: #000; font-size: 1.2rem; }
+        .btn:active { transform: scale(0.98); }
+        
+        .stat-box { background: #111; border: 1px solid #333; padding: 10px; margin-bottom: 10px; border-left: 4px solid var(--accent); }
+        
+        /* Admin Console - Now even more trolling */
+        #console { position: absolute; top: 10px; right: 10px; width: 200px; background: #000; border: 1px solid #333; font-size: 0.7rem; padding: 5px; color: #0f0; }
 
-        /* Admin Console Styling */
-        #admin-box { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: 300px; background: #111; border: 1px solid #0f0; padding: 5px; z-index: 1000; }
-        #admin-input { background: #000; border: none; color: #0f0; width: 70%; outline: none; font-size: 0.8rem; }
-        
-        /* Layout Fixes */
-        .stat-card { background: rgba(255,255,255,0.03); border: 1px solid #333; border-radius: 8px; padding: 8px; margin-bottom: 5px; font-size: 0.75rem; }
-        .gamble-btn { width: 100%; padding: 15px; border: none; border-radius: 10px; cursor: pointer; font-weight: 900; background: #fff; color: #000; font-size: 1.5rem; text-transform: uppercase; }
-        
-        /* Troll Effects */
-        .flip { transform: scaleY(-1); }
-        .glitch { animation: glitchAnim 0.1s infinite; }
-        @keyframes glitchAnim { 0% { opacity: 1; } 50% { opacity: 0.1; transform: skew(10deg); } 100% { opacity: 1; } }
-        
-        #display-stage { font-size: 8rem; position: relative; height: 200px; display: flex; align-items: center; justify-content: center; }
-        .tag { font-size: 0.6rem; letter-spacing: 2px; color: #555; text-transform: uppercase; }
-        #inv-list { font-size: 0.65rem; }
+        /* Visual Effects */
+        .matrix { color: #0f0 !important; text-shadow: 0 0 5px #0f0; }
+        .inverted { filter: invert(1) hue-rotate(180deg); }
     </style>
 </head>
-<body id="game-body">
+<body id="b">
 
-<div id="flash"></div>
+<div id="breach-overlay"></div>
 
-<div class="sidebar">
-    <h2 style="color:var(--zenith); text-align: center; margin:0;">DABESTGAME</h2>
-    <div class="stat-card">
-        <b>LVL <span id="lvl">1</span></b>
-        <div style="width:100%; height:4px; background:#222; margin-top:4px;"><div id="xp-fill" style="width:0%; height:100%; background:var(--zenith);"></div></div>
+<div class="panel">
+    <h1 style="color:var(--zenith); margin:0;">DABESTGAME</h1>
+    <div class="stat-box">
+        LVL: <span id="lvl">1</span>
+        <div style="width:100%; height:4px; background:#222;"><div id="xp" style="width:0%; height:100%; background:var(--zenith);"></div></div>
     </div>
-    <div class="stat-card">LUCK: <span id="luck-val">1.0</span>x</div>
-    <div class="stat-card">WINS: <span id="wins-val">0</span></div>
-    <div id="inv-list" style="margin-top: 10px;"></div>
+    <div class="stat-box">DARK MATTER: <span id="dm">0</span></div>
+    <div class="stat-box">LUCK: <span id="luck">1.0</span>x</div>
+    
+    <div id="inventory" style="font-size: 0.7rem; margin-top: 10px;"></div>
 </div>
 
-<div class="main-game" id="main-view">
-    <div id="display-stage">🥚</div>
-    <div id="rarity-tag" style="font-weight: 900; font-size: 1.2rem;">READY</div>
-    <div id="display-name" style="font-size: 1.8rem; font-weight: 900; margin-bottom: 10px;">Gamble?</div>
-    
-    <div style="width: 250px;">
-        <button class="gamble-btn" onclick="roll()">GAMBLE TIME</button>
-        <div style="display:flex; justify-content: space-between; margin-top: 10px;">
-            <label style="font-size: 0.6rem;"><input type="checkbox" id="turbo"> TURBO</label>
-            <span class="tag">VER: 40.0.1</span>
+<div class="main" id="m">
+    <div id="console">SYSTEM: STANDBY...</div>
+    <div class="stage" id="s">📦</div>
+    <div id="rtag" style="font-weight:900; letter-spacing:5px;">READY</div>
+    <h2 id="name">...</h2>
+
+    <div style="width: 300px;">
+        <button class="btn" onclick="roll()">GAMBLE TIME</button>
+        <div style="margin-top:10px; text-align:center;">
+            <input type="checkbox" id="turbo"> <span style="font-size:0.7rem;">TURBO SPLICER</span>
         </div>
     </div>
-
-    <div id="admin-box">
-        <span style="color:#0f0;">$</span>
-        <input type="text" id="admin-input" placeholder="enter admin cmd..." onkeydown="if(event.key==='Enter') doAdmin()">
-    </div>
 </div>
 
-<div class="shop-panel">
-    <span class="tag">Extreme Shop</span>
-    <div class="stat-card"><b>Luck+</b> <button onclick="buy('luck', 50)" class="btn">50 Com</button></div>
-    <div class="stat-card"><b>Auto</b> <button onclick="buy('auto', 10)" class="btn">10 God</button></div>
-    <div class="stat-card"><b>Warp</b> <button onclick="buy('warp', 100)" class="btn">100 Win</button></div>
+<div class="panel">
+    <h3 style="color:var(--darkmatter);">EVENT HORIZON SHOP</h3>
+    <div class="stat-box">
+        <b>Common → Dark Matter</b>
+        <button class="btn" style="font-size:0.7rem; padding:5px;" onclick="convertDM()">SACRIFICE 100 COM</button>
+    </div>
+    <div class="stat-box">
+        <b>Admin Access (BETA)</b>
+        <button class="btn" style="font-size:0.7rem; padding:5px;" onclick="adminTroll()">EXECUTE CMD</button>
+    </div>
+    <div class="stat-box">
+        <b>Luck Engine</b>
+        <button class="btn" style="font-size:0.7rem; padding:5px;" onclick="buyLuck()">10 DARK MATTER</button>
+    </div>
 </div>
 
 <script>
-    const rarities = ["Common", "Sturdy", "Uncommon", "Vibrant", "Rare", "Elite", "Legendary", "Exotic", "Mythic", "Eldritch", "Ancient", "Primal", "Godly", "Demonic", "Angelic", "Fallen", "Ascended", "Celestial", "Galactic", "Universal", "Multiversal", "Dimensional", "Void", "Abyssal", "Singularity", "Infinity", "Eternal", "Omnipotent", "Alpha", "Omega", "Zenith", "Reality", "Creator", "System", "Nuclear", "Corrupted", "Glitched", "Error", "404", "THE_END"];
-    const icons = ["🐀", "🐺", "🦁", "🐉", "🐙", "🦖", "🐦‍🔥", "🛸", "🚢", "🏎️", "🚀", "🪐", "💎", "♾️", "👁️"];
-    
-    let s = { rolls: 0, exp: 0, lvl: 1, luck: 1, wins: 0, inv: {} };
-    rarities.forEach(r => s.inv[r] = 0);
+    const tiers = ["Common", "Rare", "Legendary", "Godly", "Void", "Zenith", "Dimension-Breaker", "ERROR_NULL"];
+    const colors = ["#95a5a6", "#3498db", "#f1c40f", "#ff3e3e", "#2c3e50", "#00ff88", "#7000ff", "#ff0055"];
+    const icons = ["🐹", "🐺", "🐲", "🐦‍🔥", "👁️", "♾️", "🌌", "☣️"];
+
+    let state = { lvl: 1, xp: 0, dm: 0, luck: 1, inv: {} };
+    tiers.forEach(t => state.inv[t] = 0);
 
     function roll() {
-        s.rolls++; s.exp += 10;
-        if(s.exp >= 100) { s.lvl++; s.exp = 0; }
-        
-        let l = s.luck;
-        let rng = Math.random() * 1000000;
-        let tierIndex = 0;
-        
-        if (rng < 0.01 * l) tierIndex = 39;
-        else if (rng < 1 * l) tierIndex = 30;
-        else if (rng < 100 * l) tierIndex = 12;
-        else if (rng < 5000 * l) tierIndex = 4;
-        else tierIndex = Math.floor(Math.random() * 3);
+        state.xp += 20;
+        if(state.xp >= 100) { state.lvl++; state.xp = 0; checkBreach(); }
 
-        let t = rarities[tierIndex];
-        s.inv[t]++;
+        let rng = Math.random() * 1000;
+        let tIdx = 0;
+        let l = state.luck;
+
+        if (rng < 0.1 * l) tIdx = 7;
+        else if (rng < 1 * l) tIdx = 5;
+        else if (rng < 50 * l) tIdx = 2;
+        else if (rng < 200 * l) tIdx = 1;
+
+        let tier = tiers[tIdx];
+        state.inv[tier]++;
         
-        document.getElementById('display-stage').innerText = icons[tierIndex % icons.length];
-        document.getElementById('rarity-tag').innerText = t;
-        document.getElementById('display-name').innerText = "UNIT_" + Math.floor(Math.random()*999);
+        document.getElementById('s').innerText = icons[tIdx];
+        document.getElementById('rtag').innerText = tier;
+        document.getElementById('rtag').style.color = colors[tIdx];
+        document.getElementById('name').innerText = "OBJECT-" + Math.floor(Math.random()*9999);
         
-        if(tierIndex > 30) {
-            document.getElementById('flash').style.opacity = 1;
-            setTimeout(() => document.getElementById('flash').style.opacity = 0, 100);
-        }
         updateUI();
     }
 
-    function doAdmin() {
-        let input = document.getElementById('admin-input');
-        let cmd = input.value.toLowerCase();
-        input.value = '';
-
-        if(cmd.includes('give')) {
-            alert("ADMIN ERROR: INSUFFICIENT PERMISSIONS. SHUTTING DOWN SYSTEM...");
-            document.body.classList.add('glitch');
-            setTimeout(() => document.body.classList.remove('glitch'), 2000);
-        } else if(cmd.includes('luck')) {
-            alert("LUCK OVERFLOW DETECTED.");
-            document.body.classList.add('flip');
-            setTimeout(() => document.body.classList.remove('flip'), 5000);
-        } else {
-            alert("Command not found. Redirecting to Troll.exe");
-            window.roll = function() { alert("Haha you thought!"); window.location.reload(); };
+    function checkBreach() {
+        if(state.lvl % 5 === 0) {
+            document.getElementById('breach-overlay').style.opacity = 1;
+            document.body.classList.add('inverted');
+            document.getElementById('console').innerText = "CRITICAL: DIMENSION COLLAPSE";
+            setTimeout(() => {
+                document.getElementById('breach-overlay').style.opacity = 0;
+                document.body.classList.remove('inverted');
+                document.getElementById('console').innerText = "SYSTEM: STABILIZED";
+            }, 3000);
         }
     }
 
-    function buy(type, cost) {
-        if(type === 'luck' && s.inv.Common >= cost) { s.inv.Common -= cost; s.luck += 0.5; }
-        if(type === 'auto' && s.inv.Godly >= cost) { s.inv.Godly -= cost; setInterval(roll, 1000); }
-        if(type === 'warp' && s.wins >= cost) { s.wins -= cost; s.lvl += 5; }
-        updateUI();
+    function adminTroll() {
+        const trolls = [
+            () => { document.body.style.transform = "rotate(180deg)"; setTimeout(()=>document.body.style.transform="rotate(0deg)", 3000); },
+            () => { alert("VIRUS DETECTED. DELETING PROGRESS..."); },
+            () => { document.getElementById('m').classList.add('matrix'); setTimeout(()=>document.getElementById('m').classList.remove('matrix'), 5000); },
+            () => { for(let i=0; i<5; i++) { alert("I am watching you."); } }
+        ];
+        trolls[Math.floor(Math.random()*trolls.length)]();
+    }
+
+    function convertDM() {
+        if(state.inv.Common >= 100) {
+            state.inv.Common -= 100;
+            state.dm += 1;
+            updateUI();
+        }
+    }
+
+    function buyLuck() {
+        if(state.dm >= 10) {
+            state.dm -= 10;
+            state.luck += 5;
+            updateUI();
+        }
     }
 
     function updateUI() {
-        document.getElementById('lvl').innerText = s.lvl;
-        document.getElementById('xp-fill').style.width = s.exp + "%";
-        document.getElementById('luck-val').innerText = s.luck.toFixed(1);
-        document.getElementById('wins-val').innerText = s.wins;
+        document.getElementById('lvl').innerText = state.lvl;
+        document.getElementById('xp').style.width = state.xp + "%";
+        document.getElementById('dm').innerText = state.dm;
+        document.getElementById('luck').innerText = state.luck.toFixed(1);
         
         let html = "";
-        rarities.slice().reverse().forEach(r => {
-            if(s.inv[r] > 0) html += `<div>${r}: ${s.inv[r]}</div>`;
+        tiers.slice().reverse().forEach(t => {
+            if(state.inv[t] > 0) html += `<div style="color:${colors[tiers.indexOf(t)]}">${t}: ${state.inv[t]}</div>`;
         });
-        document.getElementById('inv-list').innerHTML = html;
+        document.getElementById('inventory').innerHTML = html;
     }
 
     setInterval(() => { if(document.getElementById('turbo').checked) roll(); }, 100);
